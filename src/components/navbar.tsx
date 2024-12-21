@@ -1,8 +1,9 @@
 "use client"
 
-import { ConnectKitButton } from "connectkit"
 import Link from "next/link"
 import { useState } from "react"
+
+import ConnectWalletButton from "@/components/connect-wallet-button"
 
 export function NavBar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -45,24 +46,18 @@ export function NavBar() {
           <Link href="/" className="text-gray-600 hover:text-black">
             Home
           </Link>
-          <Link href="/pages/Donate" className="text-gray-600 hover:text-black">
+          <Link href="/donate" className="text-gray-600 hover:text-black">
             Donate
           </Link>
-          <Link
-            href="/pages/History"
-            className="text-gray-600 hover:text-black"
-          >
+          <Link href="/history" className="text-gray-600 hover:text-black">
             History
           </Link>
-          <Link
-            href="/pages/Profile"
-            className="text-gray-600 hover:text-black"
-          >
+          <Link href="/profile" className="text-gray-600 hover:text-black">
             Profile
           </Link>
         </nav>
         <div className="hidden md:flex mt-3">
-          <ConnectKitButton />
+          <ConnectWalletButton />
         </div>
       </div>
 
@@ -77,28 +72,28 @@ export function NavBar() {
               Home
             </Link>
             <Link
-              href="/pages/Donate"
+              href="/donate"
               className="block text-gray-600 hover:text-black"
               onClick={() => setIsOpen(false)}
             >
               Donate
             </Link>
             <Link
-              href="/pages/History"
+              href="/history"
               className="block text-gray-600 hover:text-black"
               onClick={() => setIsOpen(false)}
             >
               History
             </Link>
             <Link
-              href="/pages/Profile"
+              href="/profile"
               className="block text-gray-600 hover:text-black"
               onClick={() => setIsOpen(false)}
             >
               Profile
             </Link>
             <div>
-              <ConnectKitButton />
+              <ConnectWalletButton />
             </div>
           </nav>
         </div>

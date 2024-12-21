@@ -1,7 +1,8 @@
 "use client"
 
-import { DonateSuccess } from "./DonateSuccess"
 import { useState } from "react"
+
+import { DonateSuccess } from "@/app/donate/components/donate-success"
 
 interface Creator {
   name: string

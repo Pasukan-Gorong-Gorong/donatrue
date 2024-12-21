@@ -1,10 +1,15 @@
+"use client"
+
 import { env } from "@/env"
 import { getDefaultConfig } from "connectkit"
-import { http, createConfig } from "wagmi"
+import { http, createConfig, createStorage } from "wagmi"
 import { mainnet } from "wagmi/chains"
 
 export const config = createConfig(
   getDefaultConfig({
+    storage: createStorage({
+      storage: (global && global.localStorage) ?? globalThis.localStorage
+    }),
     // Your dApps chains
     chains: [mainnet],
     transports: {

@@ -1,7 +1,5 @@
 "use client"
 
-import { Footer } from "@/app/components/Footer"
-import { NavBar } from "@/app/components/NavBar"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -32,7 +30,6 @@ export default function Profile() {
 
   return (
     <main>
-      <NavBar />
       <section className="bg-gradient-to-b from-gray-100 to-white min-h-screen px-8 py-12">
         <h1 className="text-center text-black text-2xl font-semibold mb-6">
           Your Profile
@@ -59,7 +56,7 @@ export default function Profile() {
             </a>
           </p>
           <div className="hover:bg-slate-100 mt-4 flex items-center justify-center max-w-lg px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-400 focus:outline-none text-black">
-            <Link href="/pages/Profile/EditProfile">Edit Profile</Link>
+            <Link href="/profile/edit-profile">Edit Profile</Link>
           </div>
         </div>
 
@@ -139,7 +136,6 @@ export default function Profile() {
           </div>
         </div>
       </section>
-      <Footer />
     </main>
   )
 }

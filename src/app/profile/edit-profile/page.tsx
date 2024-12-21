@@ -1,7 +1,5 @@
 "use client"
 
-import { Footer } from "@/app/components/Footer"
-import { NavBar } from "@/app/components/NavBar"
 import Image from "next/image"
 import { useState } from "react"
 
@@ -26,7 +24,6 @@ export default function EditProfile() {
 
   return (
     <main>
-      <NavBar />
       <section className="bg-gradient-to-b from-gray-100 to-white min-h-screen px-8 py-12">
         <h1 className="text-center text-black text-4xl font-bold mb-6">
           Edit Profile
@@ -97,7 +94,6 @@ export default function EditProfile() {
           </div>
         </div>
       </section>
-      <Footer />
     </main>
   )
 }

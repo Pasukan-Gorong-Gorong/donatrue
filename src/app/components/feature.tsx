@@ -1,4 +1,4 @@
-import { CardFeature } from "../components/CardFeature"
+import { CardFeature } from "./card-feature"
 
 export function Feature() {
   const features = [

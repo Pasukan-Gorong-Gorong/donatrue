@@ -1,12 +1,8 @@
 "use client"
 
-import { Footer } from "@/app/components/Footer"
-import { NavBar } from "@/app/components/NavBar"
-
 export default function NewProfile() {
   return (
     <main>
-      <NavBar />
       <section className="bg-gradient-to-b from-gray-100 to-white min-h-screen px-8 py-12 flex justify-center items-center">
         <div className="w-full text-black max-w-2xl bg-white rounded-lg shadow-lg p-8">
           <h1 className="text-2xl font-bold text-center text-black mb-6">
@@ -80,7 +76,6 @@ export default function NewProfile() {
           </form>
         </div>
       </section>
-      <Footer />
     </main>
   )
 }

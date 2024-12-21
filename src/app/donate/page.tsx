@@ -1,11 +1,10 @@
 "use client"
 
-import { ConfirmDonationModal } from "@/app/components/ConfirmDonation"
-import { Footer } from "@/app/components/Footer"
-import { NavBar } from "@/app/components/NavBar"
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
+
+import { ConfirmDonationModal } from "@/app/donate/components/confirm-donation"
 
 export default function Donate() {
   const [isModalOpen, setModalOpen] = useState(false)
@@ -31,8 +30,6 @@ export default function Donate() {
 
   return (
     <main>
-      <NavBar />
-
       <section className="bg-gradient-to-b from-gray-100 to-white min-h-screen px-8 py-12">
         <h1 className="text-center text-black text-4xl font-bold mb-6">
           Donate to your favorite creator!
@@ -84,7 +81,7 @@ export default function Donate() {
                   Donate
                 </button>
                 <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-300 transition">
-                  <Link href="/pages/History">Track Donation</Link>
+                  <Link href="/history">Track Donation</Link>
                 </button>
               </div>
             </div>
@@ -99,8 +96,6 @@ export default function Donate() {
           onClose={handleCloseModal}
         />
       )}
-
-      <Footer />
     </main>
   )
 }

@@ -1,7 +1,5 @@
 "use client"
 
-import { Footer } from "@/app/components/Footer"
-import { NavBar } from "@/app/components/NavBar"
 import Image from "next/image"
 
 export default function History() {
@@ -31,7 +29,6 @@ export default function History() {
 
   return (
     <main>
-      <NavBar />
       <section className="bg-gradient-to-b from-gray-100 to-white min-h-screen px-8 py-12">
         <h1 className="text-center text-black text-4xl font-bold mb-6">
           Track your creator donation
@@ -106,7 +103,6 @@ export default function History() {
           </table>
         </div>
       </section>
-      <Footer />
     </main>
   )
 }

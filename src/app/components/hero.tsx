@@ -1,7 +1,8 @@
 "use client"
 
-import { buttonVariants } from "@/components/ui/button"
 import Link from "next/link"
+
+import { buttonVariants } from "@/components/ui/button"
 
 export function Hero() {
   return (
@@ -17,13 +18,13 @@ export function Hero() {
 
       <div className="flex space-x-4">
         <Link
-          href="/pages/Donate"
+          href="/donate"
           className={buttonVariants({ size: "lg", variant: "default" })}
         >
           Explore
         </Link>
         <Link
-          href="/pages/Profile"
+          href="/profile"
           className={buttonVariants({ size: "lg", variant: "outline" })}
         >
           Profile

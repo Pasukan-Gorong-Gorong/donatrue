@@ -1,10 +1,15 @@
-import "./globals.css"
-import Providers from "./providers"
 import type { Metadata } from "next"
 import localFont from "next/font/local"
 
+import Providers from "@/app/providers"
+
+import { Footer } from "@/components/footer"
+import { NavBar } from "@/components/navbar"
+
+import "./globals.css"
+
 const myFont = localFont({
-  src: "../../public/font/0xProtoNerdFont-Regular.ttf",
+  src: "../lib/font/0xProtoNerdFont-Regular.ttf",
   display: "swap"
 })
 
@@ -25,7 +30,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${myFont.className} antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <NavBar />
+          {children}
+          <Footer />
+        </Providers>
       </body>
     </html>
   )
