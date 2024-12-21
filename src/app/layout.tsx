@@ -1,16 +1,16 @@
-import "./globals.css"
-import Providers from "./providers"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import localFont from "next/font/local"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"]
-})
+import Providers from "@/app/providers"
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"]
+import { Footer } from "@/components/footer"
+import { NavBar } from "@/components/navbar"
+
+import "./globals.css"
+
+const myFont = localFont({
+  src: "../lib/font/0xProtoNerdFont-Regular.ttf",
+  display: "swap"
 })
 
 export const metadata: Metadata = {
@@ -29,10 +29,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers>{children}</Providers>
+      <body className={`${myFont.className} antialiased`}>
+        <Providers>
+          <NavBar />
+          {children}
+          <Footer />
+        </Providers>
       </body>
     </html>
   )
