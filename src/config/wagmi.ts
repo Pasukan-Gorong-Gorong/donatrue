@@ -2,20 +2,31 @@
 
 import { env } from "@/env"
 import { getDefaultConfig } from "connectkit"
+import { del, get, set } from "idb-keyval"
 import { http, createConfig, createStorage } from "wagmi"
-import { mainnet } from "wagmi/chains"
+import { sepolia } from "wagmi/chains"
 
 export const config = createConfig(
   getDefaultConfig({
     storage: createStorage({
-      storage: (global && global.localStorage) ?? globalThis.localStorage
+      storage: {
+        async getItem(name) {
+          return get(name)
+        },
+        async setItem(name, value) {
+          await set(name, value)
+        },
+        async removeItem(name) {
+          await del(name)
+        }
+      }
     }),
     // Your dApps chains
-    chains: [mainnet],
+    chains: [sepolia],
     transports: {
       // RPC URL for each chain
-      [mainnet.id]: http(
-        `https://eth-mainnet.g.alchemy.com/v2/${env.NEXT_PUBLIC_ALCHEMY_ID}`
+      [sepolia.id]: http(
+        `https://eth-sepolia.g.alchemy.com/v2/${env.NEXT_PUBLIC_ALCHEMY_ID}`
       )
     },
 
