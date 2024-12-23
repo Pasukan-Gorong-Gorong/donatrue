@@ -26,6 +26,8 @@ export function Hero() {
     }
   })
 
+  console.log(creatorContractAddress, address, isConnected)
+
   return (
     <section className="flex flex-col items-center justify-center h-screen bg-white">
       <h1 className="text-4xl md:text-6xl font-bold text-black text-center mb-4">
@@ -44,23 +46,21 @@ export function Hero() {
         >
           Explore
         </Link>
-        {creatorContractAddress &&
-        creatorContractAddress ==
-          "0x0000000000000000000000000000000000000000" ? (
+        {isConnected &&
+        (creatorContractAddress ==
+          "0x0000000000000000000000000000000000000000" ||
+          !creatorContractAddress) ? (
           <RegisterFormDialog />
-        ) : (
-          isConnected &&
-          creatorContractAddress &&
+        ) : creatorContractAddress &&
           creatorContractAddress !=
-            "0x0000000000000000000000000000000000000000" && (
-            <Link
-              href="/profile"
-              className={buttonVariants({ size: "lg", variant: "default" })}
-            >
-              Profile
-            </Link>
-          )
-        )}
+            "0x0000000000000000000000000000000000000000" ? (
+          <Link
+            href="/profile"
+            className={buttonVariants({ size: "lg", variant: "default" })}
+          >
+            Profile
+          </Link>
+        ) : null}
       </div>
     </section>
   )

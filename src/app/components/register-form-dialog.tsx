@@ -3,8 +3,8 @@
 import { CREATOR_FACTORY_ADDRESS } from "@/config/consts"
 import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2, Plus, Trash2 } from "lucide-react"
-import { useEffect } from "react"
+import { Plus, Trash2 } from "lucide-react"
+import { useEffect, useState } from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useReadContract } from "wagmi"
@@ -43,6 +43,8 @@ const registerCreatorSchema = z.object({
 type RegisterCreatorSchema = z.infer<typeof registerCreatorSchema>
 
 export default function RegisterForm() {
+  const [open, setOpen] = useState(false)
+
   const { registerCreator } = useCreatorFactory()
 
   const form = useForm<RegisterCreatorSchema>({
@@ -61,7 +63,9 @@ export default function RegisterForm() {
       values.avatar || "",
       values.links || []
     )
-    form.reset()
+    // form.reset()
+    toast.success("Approve your transaction in your wallet")
+    setOpen(false)
   }
 
   const { address } = useWallet()
@@ -78,9 +82,11 @@ export default function RegisterForm() {
     args: [address!],
     query: {
       refetchInterval: 1000,
-      enabled: !!address
+      enabled: !open && !!address
     }
   })
+
+  console.log(creatorContractAddress)
 
   useEffect(() => {
     if (
@@ -93,7 +99,7 @@ export default function RegisterForm() {
   }, [creatorContractAddress, isLoading, isFetching])
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="lg">Register as a Creator</Button>
       </DialogTrigger>
@@ -162,15 +168,10 @@ export default function RegisterForm() {
             </div>
             <Button
               type="submit"
-              variant={isLoading ? "outline" : "default"}
-              size={isLoading ? "icon" : "lg"}
-              disabled={isLoading}
+              // disabled={isLoading && isFetching}
+              className="w-full"
             >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                "Submit"
-              )}
+              Submit
             </Button>
           </form>
         </Form>
