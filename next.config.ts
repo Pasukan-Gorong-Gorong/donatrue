@@ -8,10 +8,8 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**"
       }
-      // more patterns go here
-      // https://regex101.com/library/mW5sD
     ],
-    unoptimized: true // Disable Image Optimization API for static export
+    unoptimized: true
   }
 }
 

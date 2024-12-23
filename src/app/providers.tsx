@@ -4,9 +4,9 @@ import { config } from "@/config/wagmi"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ConnectKitProvider } from "connectkit"
-import type * as React from "react"
 import { WagmiProvider } from "wagmi"
 
+import { TransactionProvider } from "@/lib/context/transaction-context"
 import { getQueryClient } from "@/lib/get-query-client"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -16,8 +16,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <ConnectKitProvider>
-          {children}
-          <ReactQueryDevtools />
+          <TransactionProvider>
+            {children}
+            <ReactQueryDevtools />
+          </TransactionProvider>
         </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

@@ -1,103 +1,142 @@
 "use client"
 
-import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+import { parseEther } from "viem"
+import { z } from "zod"
 
-import { DonateSuccess } from "@/app/donate/components/donate-success"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+
+import { useCreator } from "@/lib/hooks/use-creator"
 
 interface Creator {
+  address: `0x${string}`
   name: string
+  bio: string
+  avatar: string
 }
 
 interface ConfirmDonationModalProps {
   isOpen: boolean
-  creator: Creator | null
+  creator: Creator
   onClose: () => void
 }
+
+const donationSchema = z.object({
+  amount: z.string().min(1, "Amount is required"),
+  message: z
+    .string()
+    .min(1, "Message is required")
+    .max(500, "Message is too long")
+})
+
+type DonationSchema = z.infer<typeof donationSchema>
 
 export function ConfirmDonationModal({
   isOpen,
   creator,
   onClose
 }: ConfirmDonationModalProps) {
-  const [isSuccess, setIsSuccess] = useState(false)
+  const { donate, isLoading, donateError } = useCreator(creator.address)
 
-  if (!isOpen || !creator) return null
+  const form = useForm<DonationSchema>({
+    resolver: zodResolver(donationSchema),
+    defaultValues: {
+      amount: "",
+      message: ""
+    }
+  })
 
-  const handleDonate = () => {
-    setIsSuccess(true)
-  }
-
-  const handleCloseSuccess = () => {
-    setIsSuccess(false)
-    onClose()
+  const onSubmit = async (values: DonationSchema) => {
+    try {
+      const amountInWei = parseEther(values.amount)
+      await donate(values.message, amountInWei)
+      form.reset()
+      toast.success("Donation sent successfully!")
+      onClose()
+    } catch (error) {
+      console.error("Failed to donate:", error)
+      toast.error(donateError?.message || "Failed to donate. Please try again.")
+    }
   }
 
   return (
-    <>
-      {isSuccess ? (
-        <DonateSuccess onClose={handleCloseSuccess} />
-      ) : (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white text-black w-full max-w-lg p-8 rounded-lg shadow-md">
-            <h1 className="text-2xl font-bold mb-4 text-center">
-              Confirmation Donation
-            </h1>
-            <p className="text-center text-lg mb-6">
-              Send amount & Message to{" "}
-              <span className="font-semibold">{creator.name}</span>!
-            </p>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Donate to {creator.name}</DialogTitle>
+          <DialogDescription>
+            Support {creator.name} by making a donation.
+          </DialogDescription>
+        </DialogHeader>
 
-            <form>
-              <div className="mb-4">
-                <label
-                  htmlFor="amount"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Amount:
-                </label>
-                <input
-                  id="amount"
-                  type="text"
-                  placeholder="Enter amount..."
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-black focus:ring-2 focus:ring-purple-400 focus:outline-none"
-                />
-              </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount (ETH)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.000000000000000001"
+                      placeholder="0.1"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <div className="mb-6">
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Message:
-                </label>
-                <textarea
-                  id="message"
-                  placeholder="Send your message..."
-                  rows={4}
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-black focus:ring-2 focus:ring-purple-400 focus:outline-none"
-                />
-              </div>
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Message</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Write a message to the creator..."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <div className="flex justify-between">
-                <button
-                  type="button"
-                  onClick={handleDonate}
-                  className="px-6 py-2 rounded-lg bg-purple-700 text-white font-semibold hover:bg-purple-800 transition"
-                >
-                  Donate
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-200 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Donating..." : "Donate"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   )
 }

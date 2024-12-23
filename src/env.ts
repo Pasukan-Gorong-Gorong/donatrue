@@ -15,7 +15,8 @@ export const env = createEnv({
    */
   client: {
     NEXT_PUBLIC_ALCHEMY_ID: z.string().min(1),
-    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string().min(1)
+    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string().min(1),
+    NEXT_PUBLIC_CREATOR_FACTORY_ADDRESS: z.string().min(1)
   },
   /*
    * Due to how Next.js bundles environment variables on Edge and Client,
@@ -26,6 +27,8 @@ export const env = createEnv({
   runtimeEnv: {
     NEXT_PUBLIC_ALCHEMY_ID: process.env.NEXT_PUBLIC_ALCHEMY_ID,
     NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID:
-      process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+      process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+    NEXT_PUBLIC_CREATOR_FACTORY_ADDRESS:
+      process.env.NEXT_PUBLIC_CREATOR_FACTORY_ADDRESS
   }
 })

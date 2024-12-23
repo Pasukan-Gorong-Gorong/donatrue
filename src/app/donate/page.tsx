@@ -1,24 +1,46 @@
 "use client"
 
-import Image from "next/image"
-import Link from "next/link"
+import { CREATOR_FACTORY_ADDRESS } from "@/config/consts"
+import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts"
 import { useState } from "react"
+import { useReadContract } from "wagmi"
 
+import { CreatorCard } from "@/app/components/creator-card"
 import { ConfirmDonationModal } from "@/app/donate/components/confirm-donation"
 
-export default function Donate() {
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [selectedCreator, setSelectedCreator] = useState(null)
+import { useCreatorFactory } from "@/lib/hooks/use-creator-factory"
+import { useWallet } from "@/lib/hooks/use-wallet"
 
-  const creators = Array(9).fill({
-    name: "Sena Gacor",
-    about: "Pecinta nomer 1 Freya.",
-    youtube: "https://www.youtube.com/senagacor",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNyCxW0fqZhWDlhUaxDu23NAnK1BCtO4ZgC6O6nRtZ4mbOvdYHEmOwrEEB-gqy-mmcw9RvDnbgZUEesuuN08QWRrv6ZNE&s=10"
+interface Creator {
+  address: `0x${string}`
+  name: string
+  bio: string
+  avatar: string
+}
+
+export default function Donate() {
+  const { address: currentUserAddress } = useWallet()
+  const { data: creatorContractAddress } = useReadContract({
+    address: CREATOR_FACTORY_ADDRESS,
+    abi: CREATOR_FACTORY_CONTRACT_ABI,
+    functionName: "getCreatorContract",
+    args: [currentUserAddress!],
+    query: {
+      retry: 100,
+      retryDelay: 2000,
+      enabled: !!currentUserAddress
+    }
   })
 
-  const handleDonateClick = (creator: (typeof creators)[0]) => {
+  const [isModalOpen, setModalOpen] = useState(false)
+  const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null)
+  const { allCreators, isLoadingCreators } = useCreatorFactory()
+  const { isConnected } = useWallet()
+
+  const handleDonateClick = (creator: Creator) => {
+    if (!isConnected) {
+      return
+    }
     setSelectedCreator(creator)
     setModalOpen(true)
   }
@@ -26,6 +48,14 @@ export default function Donate() {
   const handleCloseModal = () => {
     setModalOpen(false)
     setSelectedCreator(null)
+  }
+
+  if (isLoadingCreators) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading creators...</div>
+      </div>
+    )
   }
 
   return (
@@ -44,52 +74,19 @@ export default function Donate() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-black">
-          {creators.map((creator, index) => (
-            <div
-              key={index}
-              className="bg-white border border-gray-300 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow"
-            >
-              <div className="flex justify-center mb-4">
-                <Image
-                  src={creator.image}
-                  alt={creator.name}
-                  width={100}
-                  height={100}
-                  className="rounded-full"
-                />
-              </div>
-              <h2 className="text-xl font-semibold text-center mb-2">
-                {creator.name}
-              </h2>
-              <p className="text-sm text-gray-600 text-center mb-4">
-                {creator.about}
-              </p>
-              <p className="text-sm text-center text-purple-600">
-                <a
-                  href={creator.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {creator.youtube}
-                </a>
-              </p>
-              <div className="flex justify-center space-x-4 mt-6">
-                <button
-                  onClick={() => handleDonateClick(creator)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-purple-700 hover:text-white hover:border-purple-700 transition"
-                >
-                  Donate
-                </button>
-                <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-300 transition">
-                  <Link href="/history">Track Donation</Link>
-                </button>
-              </div>
-            </div>
-          ))}
+          {allCreators
+            ?.filter((address) => !address.includes(creatorContractAddress!))
+            ?.map((address) => (
+              <CreatorCard
+                key={address}
+                address={address}
+                onDonateClick={handleDonateClick}
+              />
+            ))}
         </div>
       </section>
 
-      {isModalOpen && (
+      {isModalOpen && selectedCreator && (
         <ConfirmDonationModal
           isOpen={isModalOpen}
           creator={selectedCreator}
