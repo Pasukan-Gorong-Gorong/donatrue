@@ -1,5 +1,8 @@
 import { env } from "@/env"
 
+export const CREATOR_FACTORY_ADDRESS =
+  env.NEXT_PUBLIC_CREATOR_FACTORY_ADDRESS as `0x${string}`
+
 export const CREATOR_CONTRACT_ABI = [
   {
     type: "constructor",
@@ -653,5 +656,3 @@ export const CREATOR_FACTORY_CONTRACT_ABI = [
   },
   { type: "error", name: "TransferFailed", inputs: [] }
 ] as const
-
-export const CREATOR_FACTORY_ADDRESS = env.NEXT_PUBLIC_CREATOR_FACTORY_ADDRESS
