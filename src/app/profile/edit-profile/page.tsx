@@ -1,26 +1,64 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { useState } from "react"
+import { CREATOR_FACTORY_ADDRESS } from "@/config/consts";
+import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useReadContract } from "wagmi";
+
+import { useCreator } from "@/lib/hooks/use-creator";
+import { useWallet } from "@/lib/hooks/use-wallet";
 
 export default function EditProfile() {
+  const { address: currentUserAddress } = useWallet();
+  const { data: creatorContractAddress } = useReadContract({
+    address: CREATOR_FACTORY_ADDRESS,
+    abi: CREATOR_FACTORY_CONTRACT_ABI,
+    functionName: "getCreatorContract",
+    args: [currentUserAddress!],
+    query: {
+      retry: 100,
+      retryDelay: 2000,
+      enabled: !!currentUserAddress,
+    },
+  });
+
+  const { name, links, avatar, bio, updateBio, updateAvatar } = useCreator(
+    creatorContractAddress!
+  );
+
   const [profile, setProfile] = useState({
-    name: "Sena Gacor",
-    youtube: "https://youtube.com/channel",
-    wallet: "0xsas...ssdd",
-    bio: "Pecinta nomer 1 freya"
-  })
+    name: "",
+    youtube: "",
+    avatar: "",
+    bio: "",
+  });
+
+  useEffect(() => {
+    setProfile({
+      name: name || "",
+      youtube: links?.[0]?.[0] || "",
+      avatar: avatar || "/default-avatar.png",
+      bio: bio || "",
+    });
+  }, [name, links, avatar, bio]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target
-    setProfile({ ...profile, [name]: value })
-  }
+    const { name, value } = e.target;
+    setProfile((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSave = () => {
-    alert("Profile updated successfully!")
-  }
+  const handleSave = async () => {
+    try {
+      if (profile.bio !== bio) await updateBio(profile.bio);
+      if (profile.avatar !== avatar) await updateAvatar(profile.avatar);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile.");
+    }
+  };
 
   return (
     <main>
@@ -33,15 +71,21 @@ export default function EditProfile() {
           <div className="text-center mb-6">
             <div className="relative w-32 h-32 mx-auto mb-4">
               <Image
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNyCxW0fqZhWDlhUaxDu23NAnK1BCtO4ZgC6O6nRtZ4mbOvdYHEmOwrEEB-gqy-mmcw9RvDnbgZUEesuuN08QWRrv6ZNE&s=10"
+                src={profile.avatar}
                 alt="Profile Picture"
-                fill
+                width={128}
+                height={128}
                 className="rounded-full object-cover"
               />
             </div>
-            <button className="text-black hover:text-purple-800 font-semibold">
-              Change Profile Picture
-            </button>
+            <input
+              type="text"
+              name="avatar"
+              value={profile.avatar}
+              onChange={handleChange}
+              placeholder="Enter avatar URL"
+              className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:outline-none"
+            />
           </div>
 
           <div className="space-y-4">
@@ -54,7 +98,8 @@ export default function EditProfile() {
                 name="name"
                 value={profile.name}
                 onChange={handleChange}
-                className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                disabled
+                className="w-full text-gray-500 bg-gray-200 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none cursor-not-allowed"
               />
             </div>
 
@@ -67,7 +112,8 @@ export default function EditProfile() {
                 name="youtube"
                 value={profile.youtube}
                 onChange={handleChange}
-                className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                disabled
+                className="w-full text-gray-500 bg-gray-200 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none cursor-not-allowed"
               />
             </div>
 
@@ -95,5 +141,5 @@ export default function EditProfile() {
         </div>
       </section>
     </main>
-  )
+  );
 }
