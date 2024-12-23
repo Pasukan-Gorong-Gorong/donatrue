@@ -5,7 +5,8 @@ import { useState } from "react"
 import { CreatorCard } from "@/app/components/creator-card"
 import { ConfirmDonationModal } from "@/app/donate/components/confirm-donation"
 
-import { useCreatorRegistration } from "@/lib/hooks/use-creator-registration"
+import { useCreatorFactory } from "@/lib/hooks/use-creator-factory"
+import { useWallet } from "@/lib/hooks/use-wallet"
 
 interface Creator {
   address: `0x${string}`
@@ -17,9 +18,13 @@ interface Creator {
 export default function Donate() {
   const [isModalOpen, setModalOpen] = useState(false)
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null)
-  const { allCreators, isLoading } = useCreatorRegistration()
+  const { allCreators, isLoadingCreators } = useCreatorFactory()
+  const { isConnected } = useWallet()
 
   const handleDonateClick = (creator: Creator) => {
+    if (!isConnected) {
+      return
+    }
     setSelectedCreator(creator)
     setModalOpen(true)
   }
@@ -29,7 +34,7 @@ export default function Donate() {
     setSelectedCreator(null)
   }
 
-  if (isLoading) {
+  if (isLoadingCreators) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-xl">Loading creators...</div>

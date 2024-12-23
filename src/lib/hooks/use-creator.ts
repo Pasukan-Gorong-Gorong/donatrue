@@ -1,7 +1,7 @@
 import { CREATOR_CONTRACT_ABI } from "@/config/consts"
 import { useReadContract, useWriteContract } from "wagmi"
 
-export function useCreator(creatorAddress: `0x${string}`) {
+export function useCreator(creatorAddress: `0x${string}` | undefined) {
   // Read contract state
   const { data: creatorInfo, isLoading: isLoadingInfo } = useReadContract({
     address: creatorAddress,
@@ -31,6 +31,7 @@ export function useCreator(creatorAddress: `0x${string}`) {
   const { writeContract, isPending, error: donateError } = useWriteContract()
 
   const donate = (message: string, amount: bigint) => {
+    if (!creatorAddress) return
     writeContract({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,
@@ -41,6 +42,7 @@ export function useCreator(creatorAddress: `0x${string}`) {
   }
 
   const acceptDonation = (donationId: bigint) => {
+    if (!creatorAddress) return
     writeContract({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,
@@ -50,6 +52,7 @@ export function useCreator(creatorAddress: `0x${string}`) {
   }
 
   const burnDonation = (donationId: bigint) => {
+    if (!creatorAddress) return
     writeContract({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,
@@ -59,6 +62,7 @@ export function useCreator(creatorAddress: `0x${string}`) {
   }
 
   const updateBio = async (newBio: string) => {
+    if (!creatorAddress) return
     writeContract({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,
@@ -68,11 +72,32 @@ export function useCreator(creatorAddress: `0x${string}`) {
   }
 
   const updateAvatar = (newAvatar: string) => {
+    if (!creatorAddress) return
     writeContract({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,
       functionName: "updateAvatar",
       args: [newAvatar]
+    })
+  }
+
+  const addLink = (newLink: { url: string; label: string }) => {
+    if (!creatorAddress) return
+    writeContract({
+      address: creatorAddress,
+      abi: CREATOR_CONTRACT_ABI,
+      functionName: "addLink",
+      args: [newLink.url, newLink.label]
+    })
+  }
+
+  const removeLink = (index: bigint) => {
+    if (!creatorAddress) return
+    writeContract({
+      address: creatorAddress,
+      abi: CREATOR_CONTRACT_ABI,
+      functionName: "removeLink",
+      args: [index]
     })
   }
 
@@ -83,7 +108,7 @@ export function useCreator(creatorAddress: `0x${string}`) {
     donationsCount: Number(donationsCount || 0),
     bio,
     avatar,
-    isLoading: isLoadingInfo || isLoadingCount,
+    isLoading: isLoadingInfo || isLoadingCount || isPending,
 
     // Write operations
     donate,
@@ -91,7 +116,8 @@ export function useCreator(creatorAddress: `0x${string}`) {
     burnDonation,
     updateBio,
     updateAvatar,
-    isPending,
+    addLink,
+    removeLink,
     donateError
   }
 }

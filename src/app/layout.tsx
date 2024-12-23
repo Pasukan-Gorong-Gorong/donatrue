@@ -5,6 +5,7 @@ import Providers from "@/app/providers"
 
 import { Footer } from "@/components/footer"
 import { NavBar } from "@/components/navbar"
+import { Toaster } from "@/components/ui/sonner"
 
 import "./globals.css"
 
@@ -34,6 +35,7 @@ export default function RootLayout({
           <NavBar />
           {children}
           <Footer />
+          <Toaster />
         </Providers>
       </body>
     </html>

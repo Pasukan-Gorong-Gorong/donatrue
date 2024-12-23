@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useParams } from "next/navigation"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { parseEther } from "viem"
 import { z } from "zod"
 
@@ -21,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useCreator } from "@/lib/hooks/use-creator"
 import { useWallet } from "@/lib/hooks/use-wallet"
 
-const formSchema = z.object({
+const donationSchema = z.object({
   amount: z.string().min(1, "Amount is required"),
   message: z
     .string()
@@ -29,26 +30,32 @@ const formSchema = z.object({
     .max(500, "Message is too long")
 })
 
-export function DonationForm() {
+type DonationSchema = z.infer<typeof donationSchema>
+
+export function DonationFormDialog() {
   const params = useParams()
   const { isConnected } = useWallet()
-  const { donate, isPending } = useCreator(params.address as `0x${string}`)
+  const { donate, isLoading, donateError } = useCreator(
+    params.address as `0x${string}`
+  )
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<DonationSchema>({
+    resolver: zodResolver(donationSchema),
     defaultValues: {
       amount: "",
       message: ""
     }
   })
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: DonationSchema) => {
     try {
       const amountInWei = parseEther(values.amount)
-      await donate(values.message, amountInWei)
+      donate(values.message, amountInWei)
       form.reset()
+      toast.success("Donation sent successfully!")
     } catch (error) {
       console.error("Failed to donate:", error)
+      toast.error(donateError?.message || "Failed to donate. Please try again.")
     }
   }
 
@@ -104,8 +111,8 @@ export function DonationForm() {
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Donating..." : "Donate"}
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Donating..." : "Donate"}
           </Button>
         </form>
       </Form>

@@ -22,7 +22,7 @@ export function CreatorProfile() {
     burnDonation,
     // updateBio,
     // updateAvatar,
-    isPending: isCreatorPending
+    isLoading: isCreatorPending
   } = useCreator(params.address as `0x${string}`)
 
   const {

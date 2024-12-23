@@ -1,12 +1,33 @@
 "use client"
 
+import { CREATOR_FACTORY_ADDRESS } from "@/config/consts"
+import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts"
 import Link from "next/link"
+import { useReadContract } from "wagmi"
 
 import { buttonVariants } from "@/components/ui/button"
 
+import { useWallet } from "@/lib/hooks/use-wallet"
+
+import RegisterFormDialog from "./register-form-dialog"
+
 export function Hero() {
+  const { address } = useWallet()
+
+  const { data: creatorContractAddress } = useReadContract({
+    address: CREATOR_FACTORY_ADDRESS,
+    abi: CREATOR_FACTORY_CONTRACT_ABI,
+    functionName: "getCreatorContract",
+    args: [address!],
+    query: {
+      retry: 100,
+      retryDelay: 2000,
+      enabled: !!address
+    }
+  })
+
   return (
-    <section className="flex flex-col items-center justify-center h-screen bg-white text-white">
+    <section className="flex flex-col items-center justify-center h-screen bg-white">
       <h1 className="text-4xl md:text-6xl font-bold text-black text-center mb-4">
         Welcome to the Web3 Donation Platform!
       </h1>
@@ -19,16 +40,28 @@ export function Hero() {
       <div className="flex space-x-4">
         <Link
           href="/donate"
-          className={buttonVariants({ size: "lg", variant: "default" })}
+          className={buttonVariants({ size: "lg", variant: "outline" })}
         >
           Explore
         </Link>
-        <Link
+        {creatorContractAddress &&
+        creatorContractAddress ==
+          "0x0000000000000000000000000000000000000000" ? (
+          <RegisterFormDialog />
+        ) : (
+          <Link
+            href="/profile"
+            className={buttonVariants({ size: "lg", variant: "default" })}
+          >
+            Profile
+          </Link>
+        )}
+        {/* <Link
           href="/profile"
           className={buttonVariants({ size: "lg", variant: "outline" })}
         >
           Profile
-        </Link>
+        </Link> */}
       </div>
     </section>
   )
