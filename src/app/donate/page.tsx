@@ -1,6 +1,9 @@
 "use client"
 
+import { CREATOR_FACTORY_ADDRESS } from "@/config/consts"
+import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts"
 import { useState } from "react"
+import { useReadContract } from "wagmi"
 
 import { CreatorCard } from "@/app/components/creator-card"
 import { ConfirmDonationModal } from "@/app/donate/components/confirm-donation"
@@ -16,6 +19,19 @@ interface Creator {
 }
 
 export default function Donate() {
+  const { address: currentUserAddress } = useWallet()
+  const { data: creatorContractAddress } = useReadContract({
+    address: CREATOR_FACTORY_ADDRESS,
+    abi: CREATOR_FACTORY_CONTRACT_ABI,
+    functionName: "getCreatorContract",
+    args: [currentUserAddress!],
+    query: {
+      retry: 100,
+      retryDelay: 2000,
+      enabled: !!currentUserAddress
+    }
+  })
+
   const [isModalOpen, setModalOpen] = useState(false)
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null)
   const { allCreators, isLoadingCreators } = useCreatorFactory()
@@ -58,13 +74,15 @@ export default function Donate() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-black">
-          {allCreators?.map((address) => (
-            <CreatorCard
-              key={address}
-              address={address}
-              onDonateClick={handleDonateClick}
-            />
-          ))}
+          {allCreators
+            ?.filter((address) => !address.includes(creatorContractAddress!))
+            ?.map((address) => (
+              <CreatorCard
+                key={address}
+                address={address}
+                onDonateClick={handleDonateClick}
+              />
+            ))}
         </div>
       </section>
 

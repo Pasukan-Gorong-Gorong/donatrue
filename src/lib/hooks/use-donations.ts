@@ -23,7 +23,7 @@ interface PageData {
   nextPage?: number
 }
 
-export function useDonations(creatorAddress: `0x${string}`) {
+export function useDonations(creatorAddress: `0x${string}` | undefined) {
   const { data: donationsCount } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
@@ -38,6 +38,8 @@ export function useDonations(creatorAddress: `0x${string}`) {
       queryKey: ["donations", creatorAddress] as const,
       initialPageParam: 0,
       queryFn: async ({ pageParam }) => {
+        if (!creatorAddress) return { donations: [], nextPage: undefined }
+
         const startIdx = (pageParam as number) * ITEMS_PER_PAGE
         const endIdx = Math.min(
           startIdx + ITEMS_PER_PAGE,
@@ -75,6 +77,7 @@ export function useDonations(creatorAddress: `0x${string}`) {
     })
 
   const performAction = async (donationId: number, action: DonationAction) => {
+    if (!creatorAddress) return
     await write({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,

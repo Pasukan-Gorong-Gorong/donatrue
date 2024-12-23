@@ -52,7 +52,7 @@ export default function RegisterForm() {
     args: [address!],
     query: {
       retry: 100,
-      retryDelay: 2000,
+      retryDelay: 500,
       enabled: !!address
     }
   })
@@ -75,13 +75,17 @@ export default function RegisterForm() {
     registerCreator(values.name)
   }
 
+  console.log("creatorContractAddress", creatorContractAddress)
+
   useEffect(() => {
     if (
       creatorContractAddress &&
-      creatorContractAddress !== "0x0000000000000000000000000000000000000000"
+      creatorContractAddress == "0x0000000000000000000000000000000000000000"
     ) {
       return
     }
+
+    console.log("creatorContractAddress:useeffect", creatorContractAddress)
 
     if (
       creatorContractAddress &&
@@ -95,8 +99,9 @@ export default function RegisterForm() {
         updateAvatar(values.avatar)
       }
       if (values.links) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        addLink(values.links as any)
+        ;(async () => {
+          await addLink(values.links)
+        })()
       }
       form.reset()
     }

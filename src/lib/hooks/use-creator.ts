@@ -15,6 +15,12 @@ export function useCreator(creatorAddress: `0x${string}` | undefined) {
     functionName: "getDonationsCount"
   })
 
+  const { data: name } = useReadContract({
+    address: creatorAddress,
+    abi: CREATOR_CONTRACT_ABI,
+    functionName: "name"
+  })
+
   const { data: bio } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
@@ -25,6 +31,12 @@ export function useCreator(creatorAddress: `0x${string}` | undefined) {
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
     functionName: "avatar"
+  })
+
+  const { data: links } = useReadContract({
+    address: creatorAddress,
+    abi: CREATOR_CONTRACT_ABI,
+    functionName: "links"
   })
 
   // Write operations
@@ -81,14 +93,18 @@ export function useCreator(creatorAddress: `0x${string}` | undefined) {
     })
   }
 
-  const addLink = (newLink: { url: string; label: string }) => {
-    if (!creatorAddress) return
-    writeContract({
-      address: creatorAddress,
-      abi: CREATOR_CONTRACT_ABI,
-      functionName: "addLink",
-      args: [newLink.url, newLink.label]
-    })
+  const addLink = async (
+    newLink: { url: string; label: string }[] | undefined
+  ) => {
+    if (!creatorAddress || !newLink) return
+    for await (const link of newLink) {
+      writeContract({
+        address: creatorAddress,
+        abi: CREATOR_CONTRACT_ABI,
+        functionName: "addLink",
+        args: [link.url, link.label]
+      })
+    }
   }
 
   const removeLink = (index: bigint) => {
@@ -109,6 +125,8 @@ export function useCreator(creatorAddress: `0x${string}` | undefined) {
     bio,
     avatar,
     isLoading: isLoadingInfo || isLoadingCount || isPending,
+    name,
+    links,
 
     // Write operations
     donate,
