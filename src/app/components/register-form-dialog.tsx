@@ -61,6 +61,7 @@ export default function RegisterForm() {
       values.avatar || "",
       values.links || []
     )
+    form.reset()
   }
 
   const { address } = useWallet()

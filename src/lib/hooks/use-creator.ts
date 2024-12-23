@@ -55,10 +55,9 @@ export function useCreator() {
   const { data: links } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "links"
+    functionName: "getLinks",
+    args: [0n, 100n]
   })
-
-  console.log("@creatorLinks", links)
 
   // Write operations
   const { writeContract, isPending, error: donateError } = useWriteContract()
@@ -147,7 +146,7 @@ export function useCreator() {
     avatar,
     isLoading: isLoadingInfo || isLoadingCount || isPending,
     name,
-    links,
+    links: links?.[0] || ([] as { url: string; label: string }[]),
     creatorAddress,
 
     // Write operations

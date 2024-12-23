@@ -12,9 +12,10 @@ import { DonationActions } from "../components/donation-actions"
 
 export default function Profile() {
   const { name, links, avatar, bio } = useCreator()
-  console.log("@creatorLinks", links)
 
   const { creatorAddress } = useCreator()
+
+  console.log("@creatorAddress", creatorAddress)
 
   const { data: donations } = useReadContract({
     address: creatorAddress,
@@ -42,18 +43,19 @@ export default function Profile() {
           />
           <p className="text-lg font-medium text-black">{name}</p>
           <p className="text-sm text-black">{bio}</p>
-          {links && (
-            <p className="text-sm text-purple-600 mt-2">
-              <a
-                href={links?.[0]?.[0]}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-black hover:text-purple-600"
-              >
-                {links?.[0]?.[1]}
-              </a>
-            </p>
-          )}
+          {links &&
+            links?.map((x) => (
+              <div key={x.url}>
+                <a
+                  href={x.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-purple-600"
+                >
+                  {x.label}
+                </a>
+              </div>
+            ))}
           <div className="hover:bg-slate-100 mt-4 flex items-center justify-center max-w-lg px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-400 focus:outline-none text-black">
             <Link href="/profile/edit-profile">Edit Profile</Link>
           </div>

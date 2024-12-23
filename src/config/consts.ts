@@ -154,6 +154,32 @@ export const CREATOR_CONTRACT_ABI = [
   },
   {
     type: "function",
+    name: "getDonationsByDonator",
+    inputs: [
+      { name: "donator", type: "address", internalType: "address" },
+      { name: "offset", type: "uint256", internalType: "uint256" },
+      { name: "limit", type: "uint256", internalType: "uint256" }
+    ],
+    outputs: [
+      {
+        name: "result",
+        type: "tuple[]",
+        internalType: "struct Creator.Donation[]",
+        components: [
+          { name: "donator", type: "address", internalType: "address" },
+          { name: "amount", type: "uint96", internalType: "uint96" },
+          { name: "message", type: "string", internalType: "string" },
+          { name: "timestamp", type: "uint32", internalType: "uint32" },
+          { name: "isAccepted", type: "bool", internalType: "bool" },
+          { name: "isBurned", type: "bool", internalType: "bool" }
+        ]
+      },
+      { name: "total", type: "uint256", internalType: "uint256" }
+    ],
+    stateMutability: "view"
+  },
+  {
+    type: "function",
     name: "getDonationsCount",
     inputs: [],
     outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
@@ -491,6 +517,33 @@ export const CREATOR_FACTORY_CONTRACT_ABI = [
     outputs: [
       { name: "", type: "address[]", internalType: "address[]" },
       { name: "", type: "uint256", internalType: "uint256" }
+    ],
+    stateMutability: "view"
+  },
+  {
+    type: "function",
+    name: "getDonationsByDonator",
+    inputs: [
+      { name: "donator", type: "address", internalType: "address" },
+      { name: "offset", type: "uint256", internalType: "uint256" },
+      { name: "limit", type: "uint256", internalType: "uint256" }
+    ],
+    outputs: [
+      {
+        name: "result",
+        type: "tuple[]",
+        internalType: "struct CreatorFactory.DonationWithCreator[]",
+        components: [
+          { name: "creator", type: "address", internalType: "address" },
+          { name: "donator", type: "address", internalType: "address" },
+          { name: "amount", type: "uint96", internalType: "uint96" },
+          { name: "message", type: "string", internalType: "string" },
+          { name: "timestamp", type: "uint32", internalType: "uint32" },
+          { name: "isAccepted", type: "bool", internalType: "bool" },
+          { name: "isBurned", type: "bool", internalType: "bool" }
+        ]
+      },
+      { name: "total", type: "uint256", internalType: "uint256" }
     ],
     stateMutability: "view"
   },

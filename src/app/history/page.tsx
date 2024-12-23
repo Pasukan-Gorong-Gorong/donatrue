@@ -1,31 +1,24 @@
 "use client"
 
-import Image from "next/image"
+import {
+  CREATOR_FACTORY_ADDRESS,
+  CREATOR_FACTORY_CONTRACT_ABI
+} from "@/config/consts"
+import { formatDistanceToNow } from "date-fns"
+import { formatEther } from "viem"
+import { useAccount, useReadContract } from "wagmi"
 
 export default function History() {
-  const donationHistory = [
-    {
-      name: "77315xc",
-      wallet: "0x1234...5678",
-      description: "Wallet click donate",
-      value: "50 SOL",
-      status: "Accepted"
-    },
-    {
-      name: "77315xc",
-      wallet: "0x1234...5678",
-      description: "Wallet click donate",
-      value: "30 SOL",
-      status: "Burned"
-    },
-    {
-      name: "77315xc",
-      wallet: "0x1234...5678",
-      description: "Wallet click donate",
-      value: "20 SOL",
-      status: "Accepted"
-    }
-  ]
+  const { address } = useAccount()
+  console.log("@address", address)
+  const { data: userDonations } = useReadContract({
+    abi: CREATOR_FACTORY_CONTRACT_ABI,
+    address: CREATOR_FACTORY_ADDRESS,
+    functionName: "getDonationsByDonator",
+    args: [address as `0x${string}`, 0n, 100n]
+  })
+
+  console.log(userDonations)
 
   return (
     <main>
@@ -33,72 +26,81 @@ export default function History() {
         <h1 className="text-center text-black text-4xl font-bold mb-6">
           Track your creator donation
         </h1>
-
-        <div className="flex justify-center mb-10">
-          <input
-            type="text"
-            placeholder="Search creator by creator name..."
-            className="text-black w-full max-w-lg px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-400 focus:outline-none"
-          />
-        </div>
-
+        {/* 
         <div className="text-center mb-10">
           <h2 className="text-xl font-semibold text-black mb-4">
             Donation history
           </h2>
-          <Image
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNyCxW0fqZhWDlhUaxDu23NAnK1BCtO4ZgC6O6nRtZ4mbOvdYHEmOwrEEB-gqy-mmcw9RvDnbgZUEesuuN08QWRrv6ZNE&s=10"
-            alt="Sena Gacor"
-            width={100}
-            height={100}
-            className="rounded-full mx-auto mb-4"
-          />
-          <p className="text-lg font-medium text-black">Sena Gacor</p>
-          <p className="text-sm text-gray-500">0x1234...5678</p>
-        </div>
+          {avatar && (
+            <Image
+              src={avatar}
+              alt={name || "Creator"}
+              width={100}
+              height={100}
+              className="rounded-full mx-auto mb-4"
+            />
+          )}
+          <p className="text-lg font-medium text-black">
+            {name || "Unnamed Creator"}
+          </p>
+          <p className="text-sm text-gray-500">{creatorAddress}</p>
+        </div> */}
 
-        <div className="overflow-x-auto ">
+        <div className="overflow-x-auto">
           <table className="table-auto w-full border border-gray-300 rounded-lg shadow-sm">
             <thead className="bg-gray-200 text-black">
-              <tr className="">
-                <th className="px-4 py-2 text-left text-black">Name</th>
-                <th className="px-4 py-2 text-left">Wallet Address</th>
-                <th className="px-4 py-2 text-left">Description</th>
-                <th className="px-4 py-2 text-left">Value</th>
-                <th className="px-4 py-2 text-left">Status Donation</th>
+              <tr>
+                <th className="px-4 py-2 text-left text-black">Creator</th>
+                <th className="px-4 py-2 text-left">Amount</th>
+                <th className="px-4 py-2 text-left">Message</th>
+                <th className="px-4 py-2 text-left">Time</th>
+                <th className="px-4 py-2 text-left">Status</th>
               </tr>
             </thead>
             <tbody>
-              {donationHistory.map((donation, index) => (
-                <tr
-                  key={index}
-                  className={`${
-                    index % 2 === 0 ? "bg-white" : "bg-gray-100"
-                  } hover:bg-gray-50`}
-                >
-                  <td className="border px-4 py-2 text-black">
-                    {donation.name}
-                  </td>
-                  <td className="border px-4 py-2 text-black">
-                    {donation.wallet}
-                  </td>
-                  <td className="border px-4 py-2 text-black">
-                    {donation.description}
-                  </td>
-                  <td className="border px-4 py-2 text-black">
-                    {donation.value}
-                  </td>
-                  <td
-                    className={`border px-4 py-2 font-medium ${
-                      donation.status === "Accepted"
-                        ? "text-green-500"
-                        : "text-red-500"
-                    }`}
+              {userDonations?.[0]
+                ?.toSorted((a, b) => b.timestamp - a.timestamp)
+                .map((donation, index) => (
+                  <tr
+                    key={index}
+                    className={`${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-100"
+                    } hover:bg-gray-50`}
                   >
-                    {donation.status}
-                  </td>
-                </tr>
-              ))}
+                    <td className="border px-4 py-2 text-black">
+                      {donation.creator}
+                    </td>
+                    <td className="border px-4 py-2 text-black">
+                      {formatEther(donation.amount)} ETH
+                    </td>
+                    <td className="border px-4 py-2 text-black">
+                      {donation.message}
+                    </td>
+                    <td className="border px-4 py-2 text-black">
+                      {formatDistanceToNow(
+                        new Date(Number(donation.timestamp) * 1000),
+                        {
+                          addSuffix: true
+                        }
+                      )}
+                    </td>
+                    <td
+                      className={`border px-4 py-2 font-medium ${
+                        donation.isAccepted
+                          ? "text-green-500"
+                          : donation.isBurned
+                            ? "text-red-500"
+                            : "text-yellow-500"
+                      }`}
+                    >
+                      {donation.isAccepted
+                        ? "Accepted"
+                        : donation.isBurned
+                          ? "Burned"
+                          : "Pending"}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

@@ -1,43 +1,119 @@
 "use client"
 
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Plus, Trash2 } from "lucide-react"
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+import { useFieldArray, useForm } from "react-hook-form"
+import { toast } from "sonner"
+import { z } from "zod"
+
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
 import { useCreator } from "@/lib/hooks/use-creator"
 
-export default function EditProfile() {
-  const { name, links, avatar, bio, updateBio, updateAvatar } = useCreator()
+const editProfileSchema = z.object({
+  name: z.string(),
+  avatar: z.string().url("Must be a valid URL"),
+  bio: z.string().min(1, "Bio is required").max(500, "Bio is too long"),
+  links: z.array(
+    z.object({
+      url: z.string().url("Must be a valid URL"),
+      label: z.string().min(1, "Label is required")
+    })
+  )
+})
 
-  const [profile, setProfile] = useState({
-    name: "",
-    youtube: "",
-    avatar: "",
-    bio: ""
+type EditProfileSchema = z.infer<typeof editProfileSchema>
+
+export default function EditProfile() {
+  const {
+    name,
+    links,
+    avatar,
+    bio,
+    updateBio,
+    updateAvatar,
+    addLink,
+    removeLink,
+    isLoading
+  } = useCreator()
+
+  const form = useForm<EditProfileSchema>({
+    resolver: zodResolver(editProfileSchema),
+    defaultValues: {
+      name: "",
+      avatar: "",
+      bio: "",
+      links: []
+    }
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    name: "links",
+    control: form.control
   })
 
   useEffect(() => {
-    setProfile({
-      name: name || "",
-      youtube: links?.[0]?.[0] || "",
-      avatar: avatar || "/default-avatar.png",
-      bio: bio || ""
-    })
-  }, [name, links, avatar, bio])
+    if (name || avatar || bio || links) {
+      form.reset({
+        name: name || "",
+        avatar: avatar || "",
+        bio: bio || "",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        links: (links as any) || []
+      })
+    }
+  }, [name, avatar, bio, links, form])
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target
-    setProfile((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleSave = async () => {
+  const onSubmit = async (values: EditProfileSchema) => {
     try {
-      if (profile.bio !== bio) await updateBio(profile.bio)
-      if (profile.avatar !== avatar) await updateAvatar(profile.avatar)
+      if (values.bio !== bio) await updateBio(values.bio)
+      if (values.avatar !== avatar) await updateAvatar(values.avatar)
+
+      // Handle links updates
+      const currentLinks = links || []
+      const newLinks = values.links || []
+
+      // Find links to remove (exist in current but not in new)
+      currentLinks.forEach((link, index) => {
+        const exists = newLinks.some(
+          (newLink) => newLink.url === link.url && newLink.label === link.label
+        )
+        if (!exists) {
+          removeLink(BigInt(index))
+        }
+      })
+
+      // Find links to add (exist in new but not in current)
+      const linksToAdd = newLinks.filter(
+        (newLink) =>
+          !currentLinks.some(
+            (currentLink) =>
+              currentLink.url === newLink.url &&
+              currentLink.label === newLink.label
+          )
+      )
+
+      // Add new links
+      if (linksToAdd.length > 0) {
+        await addLink(linksToAdd)
+      }
+
+      toast.success("Profile updated successfully!")
     } catch (error) {
       console.error("Error updating profile:", error)
-      alert("Failed to update profile.")
+      toast.error("Failed to update profile. Please try again.")
     }
   }
 
@@ -49,76 +125,125 @@ export default function EditProfile() {
         </h1>
 
         <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-          <div className="text-center mb-6">
-            <div className="relative w-32 h-32 mx-auto mb-4">
-              <Image
-                src={profile.avatar}
-                alt="Profile Picture"
-                width={128}
-                height={128}
-                className="rounded-full object-cover"
-              />
-            </div>
-            <input
-              type="text"
-              name="avatar"
-              value={profile.avatar}
-              onChange={handleChange}
-              placeholder="Enter avatar URL"
-              className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:outline-none"
-            />
-          </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="text-center mb-6">
+                <div className="relative w-32 h-32 mx-auto mb-4">
+                  <Image
+                    src={form.watch("avatar") || "/default-avatar.png"}
+                    alt="Profile Picture"
+                    width={128}
+                    height={128}
+                    className="rounded-full object-cover"
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="avatar"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Avatar URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter avatar URL" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Name
-              </label>
-              <input
-                type="text"
+              <FormField
+                control={form.control}
                 name="name"
-                value={profile.name}
-                onChange={handleChange}
-                disabled
-                className="w-full text-gray-500 bg-gray-200 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none cursor-not-allowed"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                YouTube Channel
-              </label>
-              <input
-                type="text"
-                name="youtube"
-                value={profile.youtube}
-                onChange={handleChange}
-                disabled
-                className="w-full text-gray-500 bg-gray-200 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none cursor-not-allowed"
-              />
-            </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <FormLabel>Links</FormLabel>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => append({ url: "", label: "" })}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Link
+                  </Button>
+                </div>
+                {fields.map((field, index) => (
+                  <div key={field.id} className="flex gap-2">
+                    <FormField
+                      control={form.control}
+                      name={`links.${index}.label`}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
+                            <Input
+                              placeholder="Label (e.g. YouTube)"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`links.${index}.url`}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
+                            <Input placeholder="URL" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => remove(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
 
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Bio
-              </label>
-              <textarea
+              <FormField
+                control={form.control}
                 name="bio"
-                value={profile.bio}
-                onChange={handleChange}
-                className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bio</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Write something about yourself..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
 
-          <div className="text-center mt-6">
-            <button
-              onClick={handleSave}
-              className="px-6 py-3 bg-purple-700 text-white rounded-lg font-semibold shadow-md hover:bg-purple-800 transition"
-            >
-              Save Changes
-            </button>
-          </div>
+              <div className="text-center">
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </div>
       </section>
     </main>
