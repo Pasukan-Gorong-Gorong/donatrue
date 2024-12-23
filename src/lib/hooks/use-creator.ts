@@ -1,7 +1,26 @@
-import { CREATOR_CONTRACT_ABI } from "@/config/consts"
+import {
+  CREATOR_CONTRACT_ABI,
+  CREATOR_FACTORY_ADDRESS,
+  CREATOR_FACTORY_CONTRACT_ABI
+} from "@/config/consts"
 import { useReadContract, useWriteContract } from "wagmi"
 
-export function useCreator(creatorAddress: `0x${string}` | undefined) {
+import { useWallet } from "./use-wallet"
+
+export function useCreator() {
+  const { address: currentUserAddress } = useWallet()
+  const { data: creatorAddress } = useReadContract({
+    address: CREATOR_FACTORY_ADDRESS,
+    abi: CREATOR_FACTORY_CONTRACT_ABI,
+    functionName: "getCreatorContract",
+    args: [currentUserAddress!],
+    query: {
+      retry: 100,
+      retryDelay: 2000,
+      enabled: !!currentUserAddress
+    }
+  })
+
   // Read contract state
   const { data: creatorInfo, isLoading: isLoadingInfo } = useReadContract({
     address: creatorAddress,
@@ -38,6 +57,8 @@ export function useCreator(creatorAddress: `0x${string}` | undefined) {
     abi: CREATOR_CONTRACT_ABI,
     functionName: "links"
   })
+
+  console.log("@creatorLinks", links)
 
   // Write operations
   const { writeContract, isPending, error: donateError } = useWriteContract()
@@ -127,6 +148,7 @@ export function useCreator(creatorAddress: `0x${string}` | undefined) {
     isLoading: isLoadingInfo || isLoadingCount || isPending,
     name,
     links,
+    creatorAddress,
 
     // Write operations
     donate,

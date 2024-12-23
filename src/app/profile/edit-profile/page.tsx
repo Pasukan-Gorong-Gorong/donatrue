@@ -1,64 +1,45 @@
-"use client";
+"use client"
 
-import { CREATOR_FACTORY_ADDRESS } from "@/config/consts";
-import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts";
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { useReadContract } from "wagmi";
+import Image from "next/image"
+import { useState, useEffect } from "react"
 
-import { useCreator } from "@/lib/hooks/use-creator";
-import { useWallet } from "@/lib/hooks/use-wallet";
+import { useCreator } from "@/lib/hooks/use-creator"
 
 export default function EditProfile() {
-  const { address: currentUserAddress } = useWallet();
-  const { data: creatorContractAddress } = useReadContract({
-    address: CREATOR_FACTORY_ADDRESS,
-    abi: CREATOR_FACTORY_CONTRACT_ABI,
-    functionName: "getCreatorContract",
-    args: [currentUserAddress!],
-    query: {
-      retry: 100,
-      retryDelay: 2000,
-      enabled: !!currentUserAddress,
-    },
-  });
-
-  const { name, links, avatar, bio, updateBio, updateAvatar } = useCreator(
-    creatorContractAddress!
-  );
+  const { name, links, avatar, bio, updateBio, updateAvatar } = useCreator()
 
   const [profile, setProfile] = useState({
     name: "",
     youtube: "",
     avatar: "",
-    bio: "",
-  });
+    bio: ""
+  })
 
   useEffect(() => {
     setProfile({
       name: name || "",
       youtube: links?.[0]?.[0] || "",
       avatar: avatar || "/default-avatar.png",
-      bio: bio || "",
-    });
-  }, [name, links, avatar, bio]);
+      bio: bio || ""
+    })
+  }, [name, links, avatar, bio])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
-    setProfile((prev) => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setProfile((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleSave = async () => {
     try {
-      if (profile.bio !== bio) await updateBio(profile.bio);
-      if (profile.avatar !== avatar) await updateAvatar(profile.avatar);
+      if (profile.bio !== bio) await updateBio(profile.bio)
+      if (profile.avatar !== avatar) await updateAvatar(profile.avatar)
     } catch (error) {
-      console.error("Error updating profile:", error);
-      alert("Failed to update profile.");
+      console.error("Error updating profile:", error)
+      alert("Failed to update profile.")
     }
-  };
+  }
 
   return (
     <main>
@@ -141,5 +122,5 @@ export default function EditProfile() {
         </div>
       </section>
     </main>
-  );
+  )
 }

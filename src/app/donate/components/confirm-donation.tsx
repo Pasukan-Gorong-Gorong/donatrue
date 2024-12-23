@@ -55,7 +55,7 @@ export function ConfirmDonationModal({
   creator,
   onClose
 }: ConfirmDonationModalProps) {
-  const { donate, isLoading, donateError } = useCreator(creator.address)
+  const { donate, isLoading, donateError } = useCreator()
 
   const form = useForm<DonationSchema>({
     resolver: zodResolver(donationSchema),
@@ -68,9 +68,9 @@ export function ConfirmDonationModal({
   const onSubmit = async (values: DonationSchema) => {
     try {
       const amountInWei = parseEther(values.amount)
-      await donate(values.message, amountInWei)
+      donate(values.message, amountInWei)
       form.reset()
-      toast.success("Donation sent successfully!")
+      toast.success("Approve your transaction in your wallet")
       onClose()
     } catch (error) {
       console.error("Failed to donate:", error)

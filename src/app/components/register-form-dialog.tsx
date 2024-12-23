@@ -1,7 +1,7 @@
 "use client"
 
-import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts"
 import { CREATOR_FACTORY_ADDRESS } from "@/config/consts"
+import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, Trash2 } from "lucide-react"
 import { useEffect } from "react"
@@ -23,7 +23,6 @@ import { Form, FormField } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
-import { useCreator } from "@/lib/hooks/use-creator"
 import { useCreatorFactory } from "@/lib/hooks/use-creator-factory"
 import { useWallet } from "@/lib/hooks/use-wallet"
 
@@ -44,23 +43,7 @@ const registerCreatorSchema = z.object({
 type RegisterCreatorSchema = z.infer<typeof registerCreatorSchema>
 
 export default function RegisterForm() {
-  const { address } = useWallet()
-  const { data: creatorContractAddress } = useReadContract({
-    address: CREATOR_FACTORY_ADDRESS,
-    abi: CREATOR_FACTORY_CONTRACT_ABI,
-    functionName: "getCreatorContract",
-    args: [address!],
-    query: {
-      retry: 100,
-      retryDelay: 500,
-      enabled: !!address
-    }
-  })
-
-  const { registerCreator, registerCreatorError } = useCreatorFactory()
-  const { updateBio, updateAvatar, addLink } = useCreator(
-    creatorContractAddress
-  )
+  const { registerCreator } = useCreatorFactory()
 
   const form = useForm<RegisterCreatorSchema>({
     resolver: zodResolver(registerCreatorSchema)
@@ -72,43 +55,42 @@ export default function RegisterForm() {
   })
 
   function onSubmit(values: RegisterCreatorSchema) {
-    registerCreator(values.name)
+    registerCreator(
+      values.name,
+      values.bio || "",
+      values.avatar || "",
+      values.links || []
+    )
   }
 
-  console.log("creatorContractAddress", creatorContractAddress)
+  const { address } = useWallet()
+
+  // poll contract created?
+  const {
+    data: creatorContractAddress,
+    isLoading,
+    isFetching
+  } = useReadContract({
+    address: CREATOR_FACTORY_ADDRESS,
+    abi: CREATOR_FACTORY_CONTRACT_ABI,
+    functionName: "getCreatorContract",
+    args: [address!],
+    query: {
+      retry: 100,
+      retryDelay: 500,
+      enabled: !!address
+    }
+  })
 
   useEffect(() => {
     if (
       creatorContractAddress &&
-      creatorContractAddress == "0x0000000000000000000000000000000000000000"
-    ) {
-      return
-    }
-
-    console.log("creatorContractAddress:useeffect", creatorContractAddress)
-
-    if (
-      creatorContractAddress &&
       creatorContractAddress !== "0x0000000000000000000000000000000000000000"
     ) {
-      const values = form.getValues()
-      if (values.bio) {
-        updateBio(values.bio)
-      }
-      if (values.avatar) {
-        updateAvatar(values.avatar)
-      }
-      if (values.links) {
-        ;(async () => {
-          await addLink(values.links)
-        })()
-      }
       form.reset()
+      toast.success("You're successfully registered as a creator!")
     }
-    if (registerCreatorError) {
-      toast.error(registerCreatorError.message)
-    }
-  }, [creatorContractAddress, registerCreatorError])
+  }, [creatorContractAddress, isLoading, isFetching])
 
   return (
     <Dialog>

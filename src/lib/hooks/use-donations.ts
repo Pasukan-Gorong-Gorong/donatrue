@@ -1,15 +1,8 @@
 import { CREATOR_CONTRACT_ABI } from "@/config/consts"
-import { config } from "@/config/wagmi"
-import { useInfiniteQuery } from "@tanstack/react-query"
-import { useReadContract, useWriteContract } from "wagmi"
-import { readContract } from "wagmi/actions"
+import { useCallback, useEffect, useState } from "react"
+import { useReadContract } from "wagmi"
 
-const ITEMS_PER_PAGE = 10
-
-export type DonationAction = "accept" | "burn"
-
-export interface Donation {
-  id: number
+interface Donation {
   donator: `0x${string}`
   amount: bigint
   message: string
@@ -18,84 +11,48 @@ export interface Donation {
   isBurned: boolean
 }
 
-interface PageData {
-  donations: Donation[]
-  nextPage?: number
-}
+const PAGE_SIZE = 10
 
-export function useDonations(creatorAddress: `0x${string}` | undefined) {
+export function useDonations(creatorAddress: `0x${string}`) {
+  const [donations, setDonations] = useState<Donation[]>([])
+  const [offset, setOffset] = useState(0)
+  const [hasNextPage, setHasNextPage] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  const { data: donationsData, isLoading: isLoadingDonations } =
+    useReadContract({
+      address: creatorAddress,
+      abi: CREATOR_CONTRACT_ABI,
+      functionName: "getDonations",
+      args: [BigInt(offset), BigInt(PAGE_SIZE)]
+    })
+
   const { data: donationsCount } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
     functionName: "getDonationsCount"
   })
 
-  const { writeContract: write, isPending: isActionPending } =
-    useWriteContract()
+  useEffect(() => {
+    if (donationsData) {
+      const [newDonations, total] = donationsData
+      setDonations((prev) => [...prev, ...newDonations])
+      setHasNextPage(offset + PAGE_SIZE < Number(total))
+      setIsLoading(false)
+    }
+  }, [donationsData, offset])
 
-  const { data, fetchNextPage, hasNextPage, isFetching, isLoading } =
-    useInfiniteQuery({
-      queryKey: ["donations", creatorAddress] as const,
-      initialPageParam: 0,
-      queryFn: async ({ pageParam }) => {
-        if (!creatorAddress) return { donations: [], nextPage: undefined }
-
-        const startIdx = (pageParam as number) * ITEMS_PER_PAGE
-        const endIdx = Math.min(
-          startIdx + ITEMS_PER_PAGE,
-          Number(donationsCount || 0)
-        )
-
-        const donations: Donation[] = []
-        for (let i = startIdx; i < endIdx; i++) {
-          const donation = (await readContract(config, {
-            address: creatorAddress,
-            abi: CREATOR_CONTRACT_ABI,
-            functionName: "getDonation",
-            args: [BigInt(i)]
-          })) as [string, bigint, string, number, boolean, boolean]
-
-          donations.push({
-            id: i,
-            donator: donation[0] as `0x${string}`,
-            amount: donation[1],
-            message: donation[2],
-            timestamp: Number(donation[3]),
-            isAccepted: donation[4],
-            isBurned: donation[5]
-          })
-        }
-
-        return {
-          donations,
-          nextPage:
-            endIdx < Number(donationsCount || 0) ? pageParam + 1 : undefined
-        } as const
-      },
-      getNextPageParam: (lastPage: PageData) => lastPage.nextPage,
-      enabled: Boolean(donationsCount)
-    })
-
-  const performAction = async (donationId: number, action: DonationAction) => {
-    if (!creatorAddress) return
-    await write({
-      address: creatorAddress,
-      abi: CREATOR_CONTRACT_ABI,
-      functionName: action === "accept" ? "acceptDonation" : "burnDonation",
-      args: [BigInt(donationId)]
-    })
-  }
+  const fetchNextPage = useCallback(() => {
+    if (hasNextPage) {
+      setOffset((prev) => prev + PAGE_SIZE)
+    }
+  }, [hasNextPage])
 
   return {
-    donations: data?.pages.flatMap((page: PageData) => page.donations) ?? [],
-    actions: {
-      accept: (donationId: number) => performAction(donationId, "accept"),
-      burn: (donationId: number) => performAction(donationId, "burn")
-    },
-    fetchNextPage,
+    donations,
+    isLoading: isLoading || isLoadingDonations,
     hasNextPage,
-    isFetching,
-    isLoading,
-    isActionPending
+    fetchNextPage,
+    donationsCount
   }
 }

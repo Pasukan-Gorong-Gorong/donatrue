@@ -8,16 +8,28 @@ export const CREATOR_CONTRACT_ABI = [
     type: "constructor",
     inputs: [
       { name: "_owner", type: "address", internalType: "address" },
-      { name: "_name", type: "string", internalType: "string" },
       {
         name: "_feePerDonation",
         type: "uint96",
         internalType: "uint96"
       },
-      { name: "_factory", type: "address", internalType: "address" }
+      { name: "_factory", type: "address", internalType: "address" },
+      { name: "_name", type: "string", internalType: "string" },
+      { name: "_bio", type: "string", internalType: "string" },
+      { name: "_avatar", type: "string", internalType: "string" },
+      {
+        name: "_links",
+        type: "tuple[]",
+        internalType: "struct Link[]",
+        components: [
+          { name: "url", type: "string", internalType: "string" },
+          { name: "label", type: "string", internalType: "string" }
+        ]
+      }
     ],
     stateMutability: "nonpayable"
   },
+  { type: "receive", stateMutability: "payable" },
   {
     type: "function",
     name: "acceptDonation",
@@ -65,6 +77,20 @@ export const CREATOR_CONTRACT_ABI = [
   },
   {
     type: "function",
+    name: "donations",
+    inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    outputs: [
+      { name: "donator", type: "address", internalType: "address" },
+      { name: "amount", type: "uint96", internalType: "uint96" },
+      { name: "message", type: "string", internalType: "string" },
+      { name: "timestamp", type: "uint32", internalType: "uint32" },
+      { name: "isAccepted", type: "bool", internalType: "bool" },
+      { name: "isBurned", type: "bool", internalType: "bool" }
+    ],
+    stateMutability: "view"
+  },
+  {
+    type: "function",
     name: "factory",
     inputs: [],
     outputs: [{ name: "", type: "address", internalType: "address" }],
@@ -103,9 +129,55 @@ export const CREATOR_CONTRACT_ABI = [
   },
   {
     type: "function",
+    name: "getDonations",
+    inputs: [
+      { name: "offset", type: "uint256", internalType: "uint256" },
+      { name: "limit", type: "uint256", internalType: "uint256" }
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "tuple[]",
+        internalType: "struct Creator.Donation[]",
+        components: [
+          { name: "donator", type: "address", internalType: "address" },
+          { name: "amount", type: "uint96", internalType: "uint96" },
+          { name: "message", type: "string", internalType: "string" },
+          { name: "timestamp", type: "uint32", internalType: "uint32" },
+          { name: "isAccepted", type: "bool", internalType: "bool" },
+          { name: "isBurned", type: "bool", internalType: "bool" }
+        ]
+      },
+      { name: "", type: "uint256", internalType: "uint256" }
+    ],
+    stateMutability: "view"
+  },
+  {
+    type: "function",
     name: "getDonationsCount",
     inputs: [],
     outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view"
+  },
+  {
+    type: "function",
+    name: "getLinks",
+    inputs: [
+      { name: "offset", type: "uint256", internalType: "uint256" },
+      { name: "limit", type: "uint256", internalType: "uint256" }
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "tuple[]",
+        internalType: "struct Link[]",
+        components: [
+          { name: "url", type: "string", internalType: "string" },
+          { name: "label", type: "string", internalType: "string" }
+        ]
+      },
+      { name: "", type: "uint256", internalType: "uint256" }
+    ],
     stateMutability: "view"
   },
   {
@@ -411,6 +483,19 @@ export const CREATOR_FACTORY_CONTRACT_ABI = [
   },
   {
     type: "function",
+    name: "getCreators",
+    inputs: [
+      { name: "offset", type: "uint256", internalType: "uint256" },
+      { name: "limit", type: "uint256", internalType: "uint256" }
+    ],
+    outputs: [
+      { name: "", type: "address[]", internalType: "address[]" },
+      { name: "", type: "uint256", internalType: "uint256" }
+    ],
+    stateMutability: "view"
+  },
+  {
+    type: "function",
     name: "owner",
     inputs: [],
     outputs: [{ name: "", type: "address", internalType: "address" }],
@@ -446,7 +531,20 @@ export const CREATOR_FACTORY_CONTRACT_ABI = [
   {
     type: "function",
     name: "registerCreator",
-    inputs: [{ name: "name", type: "string", internalType: "string" }],
+    inputs: [
+      { name: "name", type: "string", internalType: "string" },
+      { name: "bio", type: "string", internalType: "string" },
+      { name: "avatar", type: "string", internalType: "string" },
+      {
+        name: "links",
+        type: "tuple[]",
+        internalType: "struct Link[]",
+        components: [
+          { name: "url", type: "string", internalType: "string" },
+          { name: "label", type: "string", internalType: "string" }
+        ]
+      }
+    ],
     outputs: [],
     stateMutability: "nonpayable"
   },

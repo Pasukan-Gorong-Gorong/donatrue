@@ -24,12 +24,17 @@ export function useCreatorFactory() {
     error: registerCreatorError
   } = useWriteContract()
 
-  const handleRegisterCreator = (name: string) => {
+  const handleRegisterCreator = (
+    name: string,
+    bio: string,
+    avatar: string,
+    links: { url: string; label: string }[]
+  ) => {
     registerCreator({
       address: CREATOR_FACTORY_ADDRESS,
       abi: CREATOR_FACTORY_CONTRACT_ABI,
       functionName: "registerCreator",
-      args: [name]
+      args: [name, bio, avatar, links]
     })
   }
 

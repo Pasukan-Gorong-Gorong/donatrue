@@ -1,7 +1,6 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { parseEther } from "viem"
@@ -33,11 +32,8 @@ const donationSchema = z.object({
 type DonationSchema = z.infer<typeof donationSchema>
 
 export function DonationFormDialog() {
-  const params = useParams()
   const { isConnected } = useWallet()
-  const { donate, isLoading, donateError } = useCreator(
-    params.address as `0x${string}`
-  )
+  const { donate, isLoading, donateError } = useCreator()
 
   const form = useForm<DonationSchema>({
     resolver: zodResolver(donationSchema),

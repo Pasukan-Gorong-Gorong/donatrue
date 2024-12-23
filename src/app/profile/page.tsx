@@ -1,38 +1,29 @@
 "use client"
 
-import { CREATOR_FACTORY_ADDRESS } from "@/config/consts"
-import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts"
+import { CREATOR_CONTRACT_ABI } from "@/config/consts"
 import Image from "next/image"
 import Link from "next/link"
 import { formatEther } from "viem"
 import { useReadContract } from "wagmi"
 
 import { useCreator } from "@/lib/hooks/use-creator"
-import { useDonations } from "@/lib/hooks/use-donations"
-import { useWallet } from "@/lib/hooks/use-wallet"
+
+import { DonationActions } from "../components/donation-actions"
 
 export default function Profile() {
-  const { address: currentUserAddress } = useWallet()
-  const { data: creatorContractAddress } = useReadContract({
-    address: CREATOR_FACTORY_ADDRESS,
-    abi: CREATOR_FACTORY_CONTRACT_ABI,
-    functionName: "getCreatorContract",
-    args: [currentUserAddress!],
-    query: {
-      retry: 100,
-      retryDelay: 2000,
-      enabled: !!currentUserAddress
-    }
+  const { name, links, avatar, bio } = useCreator()
+  console.log("@creatorLinks", links)
+
+  const { creatorAddress } = useCreator()
+
+  const { data: donations } = useReadContract({
+    address: creatorAddress,
+    abi: CREATOR_CONTRACT_ABI,
+    functionName: "getDonations",
+    args: [BigInt(0), BigInt(10)]
   })
 
-  const {
-    donations,
-    // fetchNextPage,
-    // hasNextPage,
-    isFetching: isDonationsFetching
-  } = useDonations(creatorContractAddress!)
-
-  const { name, links, avatar, bio } = useCreator(creatorContractAddress!)
+  console.log("@donations", donations)
 
   return (
     <main>
@@ -82,37 +73,31 @@ export default function Profile() {
           </h3>
           <div className="overflow-x-auto">
             <div className="mt-4 space-y-4">
-              {donations.map((donation, index) => (
+              {donations?.[0]?.map((donation, index) => (
                 <div key={index} className="rounded-lg border p-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-500">
-                      From: {donation.donator}
-                    </p>
+                    <div className="mt-1 text-xs text-gray-500">
+                      <p className="text-sm text-gray-500">
+                        From: {donation.donator}
+                      </p>
+                      <p className="text-xs text-cyan-700">
+                        {new Date(
+                          Number(donation.timestamp) * 1000
+                        ).toLocaleString()}
+                      </p>
+                    </div>
                     <p className="font-medium">
                       {formatEther(donation.amount)} ETH
                     </p>
                   </div>
-
-                  <p className="mt-2">{donation.message}</p>
-
-                  {!donation.isAccepted && !donation.isBurned && (
-                    <div className="mt-4 flex space-x-2">
-                      <button
-                        // onClick={() => handleAcceptDonation(BigInt(index))}
-                        className="rounded bg-green-500 px-4 py-2 text-white"
-                        disabled={isDonationsFetching}
-                      >
-                        Accept
-                      </button>
-                      <button
-                        // onClick={() => handleBurnDonation(BigInt(index))}
-                        className="rounded bg-red-500 px-4 py-2 text-white"
-                        disabled={isDonationsFetching}
-                      >
-                        Burn
-                      </button>
-                    </div>
-                  )}
+                  <p className="my-2">{donation.message}</p>
+                  <DonationActions
+                    donationId={BigInt(index)}
+                    amount={donation.amount}
+                    message={donation.message}
+                    isAccepted={donation.isAccepted}
+                    isBurned={donation.isBurned}
+                  />
                 </div>
               ))}
             </div>
