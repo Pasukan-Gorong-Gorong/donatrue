@@ -2,8 +2,10 @@
 
 import { CREATOR_FACTORY_ADDRESS } from "@/config/consts"
 import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts"
+import { config } from "@/config/wagmi"
 import { useState } from "react"
-import { useReadContract } from "wagmi"
+import { toast } from "sonner"
+import { useConnect, useReadContract } from "wagmi"
 
 import { CreatorCard } from "@/app/components/creator-card"
 import { ConfirmDonationModal } from "@/app/donate/components/confirm-donation"
@@ -36,9 +38,14 @@ export default function Donate() {
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null)
   const { allCreators, isLoadingCreators } = useCreatorFactory()
   const { isConnected } = useWallet()
+  const { connect } = useConnect()
 
   const handleDonateClick = (creator: Creator) => {
     if (!isConnected) {
+      toast.error("Please connect your wallet to donate")
+      connect({
+        connector: config.connectors[0]
+      })
       return
     }
     console.log("@creator", creator)

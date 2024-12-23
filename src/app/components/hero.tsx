@@ -12,7 +12,7 @@ import { useWallet } from "@/lib/hooks/use-wallet"
 import RegisterFormDialog from "./register-form-dialog"
 
 export function Hero() {
-  const { address } = useWallet()
+  const { address, isConnected } = useWallet()
 
   const { data: creatorContractAddress } = useReadContract({
     address: CREATOR_FACTORY_ADDRESS,
@@ -49,19 +49,18 @@ export function Hero() {
           "0x0000000000000000000000000000000000000000" ? (
           <RegisterFormDialog />
         ) : (
-          <Link
-            href="/profile"
-            className={buttonVariants({ size: "lg", variant: "default" })}
-          >
-            Profile
-          </Link>
+          isConnected &&
+          creatorContractAddress &&
+          creatorContractAddress !=
+            "0x0000000000000000000000000000000000000000" && (
+            <Link
+              href="/profile"
+              className={buttonVariants({ size: "lg", variant: "default" })}
+            >
+              Profile
+            </Link>
+          )
         )}
-        {/* <Link
-          href="/profile"
-          className={buttonVariants({ size: "lg", variant: "outline" })}
-        >
-          Profile
-        </Link> */}
       </div>
     </section>
   )

@@ -1,7 +1,6 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
 
 import { useCreatorProfile } from "@/lib/hooks/use-creator-profile"
 
@@ -54,13 +53,10 @@ export function CreatorCard({ address, onDonateClick }: CreatorCardProps) {
       <div className="flex justify-center space-x-4 mt-6">
         <button
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onClick={() => onDonateClick({ ...profile } as any)}
+          onClick={() => onDonateClick(profile as any)}
           className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-purple-700 hover:text-white hover:border-purple-700 transition"
         >
           Donate
-        </button>
-        <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-300 transition">
-          <Link href={`/history?creator=${address}`}>Track Donation</Link>
         </button>
       </div>
     </div>
