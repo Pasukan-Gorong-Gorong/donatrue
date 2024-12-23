@@ -3,7 +3,7 @@
 import { CREATOR_FACTORY_ADDRESS } from "@/config/consts"
 import { CREATOR_FACTORY_CONTRACT_ABI } from "@/config/consts"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus, Trash2 } from "lucide-react"
+import { Loader2, Plus, Trash2 } from "lucide-react"
 import { useEffect } from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -77,8 +77,7 @@ export default function RegisterForm() {
     functionName: "getCreatorContract",
     args: [address!],
     query: {
-      retry: 100,
-      retryDelay: 500,
+      refetchInterval: 1000,
       enabled: !!address
     }
   })
@@ -161,7 +160,18 @@ export default function RegisterForm() {
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
-            <Button type="submit">Submit</Button>
+            <Button
+              type="submit"
+              variant={isLoading ? "outline" : "default"}
+              size={isLoading ? "icon" : "lg"}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Submit"
+              )}
+            </Button>
           </form>
         </Form>
       </DialogContent>

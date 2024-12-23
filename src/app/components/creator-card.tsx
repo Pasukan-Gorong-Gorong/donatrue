@@ -53,7 +53,8 @@ export function CreatorCard({ address, onDonateClick }: CreatorCardProps) {
       </p>
       <div className="flex justify-center space-x-4 mt-6">
         <button
-          onClick={() => onDonateClick(profile)}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onClick={() => onDonateClick({ ...profile } as any)}
           className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-purple-700 hover:text-white hover:border-purple-700 transition"
         >
           Donate

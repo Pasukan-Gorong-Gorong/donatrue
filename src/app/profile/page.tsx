@@ -3,28 +3,59 @@
 import { CREATOR_CONTRACT_ABI } from "@/config/consts"
 import Image from "next/image"
 import Link from "next/link"
+import { toast } from "sonner"
 import { formatEther } from "viem"
 import { useReadContract } from "wagmi"
 
-import { useCreator } from "@/lib/hooks/use-creator"
+import { Button } from "@/components/ui/button"
 
-import { DonationActions } from "../components/donation-actions"
+import { useCreator } from "@/lib/hooks/use-creator"
+import { cn } from "@/lib/utils"
 
 export default function Profile() {
   const { name, links, avatar, bio } = useCreator()
 
   const { creatorAddress } = useCreator()
 
-  console.log("@creatorAddress", creatorAddress)
-
   const { data: donations } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
     functionName: "getDonations",
-    args: [BigInt(0), BigInt(10)]
+    args: [BigInt(0), BigInt(10)],
+    query: {
+      enabled: !!creatorAddress,
+      refetchInterval: 1000
+    }
   })
 
   console.log("@donations", donations)
+
+  const {
+    acceptDonation,
+    burnDonation,
+    isLoadingAcceptDonation,
+    isLoadingBurnDonation
+  } = useCreator()
+
+  const handleAccept = async (donationId: bigint) => {
+    try {
+      acceptDonation(donationId, creatorAddress!)
+      toast.success("Approve transaction on your wallet")
+    } catch (error) {
+      console.error("Failed to accept donation:", error)
+      toast.error("Failed to accept donation. Please try again.")
+    }
+  }
+
+  const handleBurn = async (donationId: bigint) => {
+    try {
+      burnDonation(donationId, creatorAddress!)
+      toast.success("Approve transaction on your wallet")
+    } catch (error) {
+      console.error("Failed to burn donation:", error)
+      toast.error("Failed to burn donation. Please try again.")
+    }
+  }
 
   return (
     <main>
@@ -93,13 +124,39 @@ export default function Profile() {
                     </p>
                   </div>
                   <p className="my-2">{donation.message}</p>
-                  <DonationActions
-                    donationId={BigInt(index)}
-                    amount={donation.amount}
-                    message={donation.message}
-                    isAccepted={donation.isAccepted}
-                    isBurned={donation.isBurned}
-                  />
+                  {donation.isAccepted || donation.isBurned ? (
+                    <p className="text-sm">
+                      Status:{" "}
+                      <span
+                        className={cn(
+                          donation.isAccepted
+                            ? "text-green-500"
+                            : "text-red-500"
+                        )}
+                      >
+                        {donation.isAccepted ? "Accepted" : "Burned"}
+                      </span>
+                    </p>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleAccept(BigInt(index))}
+                        variant="default"
+                        size="sm"
+                        disabled={isLoadingAcceptDonation}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        onClick={() => handleBurn(BigInt(index))}
+                        variant="destructive"
+                        size="sm"
+                        disabled={isLoadingBurnDonation}
+                      >
+                        Burn
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

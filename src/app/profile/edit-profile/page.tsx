@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus, Trash2 } from "lucide-react"
+import { Loader2, Plus, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useEffect } from "react"
 import { useFieldArray, useForm } from "react-hook-form"
@@ -46,7 +46,11 @@ export default function EditProfile() {
     updateAvatar,
     addLink,
     removeLink,
-    isLoading
+    isLoadingUpdateBio,
+    isLoadingUpdateAvatar,
+    isLoadingAddLink,
+    isLoadingRemoveLink,
+    creatorAddress
   } = useCreator()
 
   const form = useForm<EditProfileSchema>({
@@ -78,8 +82,9 @@ export default function EditProfile() {
 
   const onSubmit = async (values: EditProfileSchema) => {
     try {
-      if (values.bio !== bio) await updateBio(values.bio)
-      if (values.avatar !== avatar) await updateAvatar(values.avatar)
+      if (values.bio !== bio) await updateBio(values.bio, creatorAddress!)
+      if (values.avatar !== avatar)
+        await updateAvatar(values.avatar, creatorAddress!)
 
       // Handle links updates
       const currentLinks = links || []
@@ -91,7 +96,7 @@ export default function EditProfile() {
           (newLink) => newLink.url === link.url && newLink.label === link.label
         )
         if (!exists) {
-          removeLink(BigInt(index))
+          removeLink(BigInt(index), creatorAddress!)
         }
       })
 
@@ -107,7 +112,7 @@ export default function EditProfile() {
 
       // Add new links
       if (linksToAdd.length > 0) {
-        await addLink(linksToAdd)
+        await addLink(linksToAdd, creatorAddress!)
       }
 
       toast.success("Profile updated successfully!")
@@ -116,6 +121,12 @@ export default function EditProfile() {
       toast.error("Failed to update profile. Please try again.")
     }
   }
+
+  const isLoading =
+    isLoadingUpdateBio ||
+    isLoadingUpdateAvatar ||
+    isLoadingAddLink ||
+    isLoadingRemoveLink
 
   return (
     <main>
@@ -238,8 +249,17 @@ export default function EditProfile() {
               />
 
               <div className="text-center">
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Saving..." : "Save Changes"}
+                <Button
+                  type="submit"
+                  variant={isLoading ? "outline" : "default"}
+                  size={isLoading ? "icon" : "lg"}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Save Changes"
+                  )}
                 </Button>
               </div>
             </form>

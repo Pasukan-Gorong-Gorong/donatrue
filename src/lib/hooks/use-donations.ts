@@ -24,13 +24,21 @@ export function useDonations(creatorAddress: `0x${string}`) {
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,
       functionName: "getDonations",
-      args: [BigInt(offset), BigInt(PAGE_SIZE)]
+      args: [BigInt(offset), BigInt(PAGE_SIZE)],
+      query: {
+        refetchInterval: 1000,
+        enabled: !!creatorAddress
+      }
     })
 
   const { data: donationsCount } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "getDonationsCount"
+    functionName: "getDonationsCount",
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   useEffect(() => {

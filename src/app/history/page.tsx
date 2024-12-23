@@ -15,7 +15,11 @@ export default function History() {
     abi: CREATOR_FACTORY_CONTRACT_ABI,
     address: CREATOR_FACTORY_ADDRESS,
     functionName: "getDonationsByDonator",
-    args: [address as `0x${string}`, 0n, 100n]
+    args: [address as `0x${string}`, 0n, 100n],
+    query: {
+      enabled: !!address,
+      refetchInterval: 1000
+    }
   })
 
   console.log(userDonations)

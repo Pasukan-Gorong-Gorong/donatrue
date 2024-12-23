@@ -15,8 +15,7 @@ export function useCreator() {
     functionName: "getCreatorContract",
     args: [currentUserAddress!],
     query: {
-      retry: 100,
-      retryDelay: 2000,
+      refetchInterval: 1000,
       enabled: !!currentUserAddress
     }
   })
@@ -25,47 +24,71 @@ export function useCreator() {
   const { data: creatorInfo, isLoading: isLoadingInfo } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "getContractBalance"
+    functionName: "getContractBalance",
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   const { data: donationsCount, isLoading: isLoadingCount } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "getDonationsCount"
+    functionName: "getDonationsCount",
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   const { data: name } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "name"
+    functionName: "name",
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   const { data: bio } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "bio"
+    functionName: "bio",
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   const { data: avatar } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "avatar"
+    functionName: "avatar",
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   const { data: links } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
     functionName: "getLinks",
-    args: [0n, 100n]
+    args: [0n, 100n],
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   // Write operations
   const { writeContract, isPending, error: donateError } = useWriteContract()
 
-  const donate = (message: string, amount: bigint) => {
-    if (!creatorAddress) return
+  const donate = (message: string, amount: bigint, ca: `0x${string}`) => {
+    if (!ca) return
     writeContract({
-      address: creatorAddress,
+      address: ca,
       abi: CREATOR_CONTRACT_ABI,
       functionName: "donate",
       args: [message],
@@ -73,40 +96,40 @@ export function useCreator() {
     })
   }
 
-  const acceptDonation = (donationId: bigint) => {
-    if (!creatorAddress) return
+  const acceptDonation = (donationId: bigint, ca: `0x${string}`) => {
+    if (!ca) return
     writeContract({
-      address: creatorAddress,
+      address: ca,
       abi: CREATOR_CONTRACT_ABI,
       functionName: "acceptDonation",
       args: [donationId]
     })
   }
 
-  const burnDonation = (donationId: bigint) => {
-    if (!creatorAddress) return
+  const burnDonation = (donationId: bigint, ca: `0x${string}`) => {
+    if (!ca) return
     writeContract({
-      address: creatorAddress,
+      address: ca,
       abi: CREATOR_CONTRACT_ABI,
       functionName: "burnDonation",
       args: [donationId]
     })
   }
 
-  const updateBio = async (newBio: string) => {
-    if (!creatorAddress) return
+  const updateBio = async (newBio: string, ca: `0x${string}`) => {
+    if (!ca) return
     writeContract({
-      address: creatorAddress,
+      address: ca,
       abi: CREATOR_CONTRACT_ABI,
       functionName: "updateBio",
       args: [newBio]
     })
   }
 
-  const updateAvatar = (newAvatar: string) => {
-    if (!creatorAddress) return
+  const updateAvatar = (newAvatar: string, ca: `0x${string}`) => {
+    if (!ca) return
     writeContract({
-      address: creatorAddress,
+      address: ca,
       abi: CREATOR_CONTRACT_ABI,
       functionName: "updateAvatar",
       args: [newAvatar]
@@ -114,12 +137,13 @@ export function useCreator() {
   }
 
   const addLink = async (
-    newLink: { url: string; label: string }[] | undefined
+    newLink: { url: string; label: string }[] | undefined,
+    ca: `0x${string}`
   ) => {
-    if (!creatorAddress || !newLink) return
+    if (!ca || !newLink) return
     for await (const link of newLink) {
       writeContract({
-        address: creatorAddress,
+        address: ca,
         abi: CREATOR_CONTRACT_ABI,
         functionName: "addLink",
         args: [link.url, link.label]
@@ -127,10 +151,10 @@ export function useCreator() {
     }
   }
 
-  const removeLink = (index: bigint) => {
-    if (!creatorAddress) return
+  const removeLink = (index: bigint, ca: `0x${string}`) => {
+    if (!ca) return
     writeContract({
-      address: creatorAddress,
+      address: ca,
       abi: CREATOR_CONTRACT_ABI,
       functionName: "removeLink",
       args: [index]
@@ -144,10 +168,18 @@ export function useCreator() {
     donationsCount: Number(donationsCount || 0),
     bio,
     avatar,
-    isLoading: isLoadingInfo || isLoadingCount || isPending,
+    isLoadingInfo: isLoadingInfo,
+    isLoadingDonate: isPending,
+    isLoadingAcceptDonation: isPending,
+    isLoadingBurnDonation: isPending,
+    isLoadingUpdateBio: isPending,
+    isLoadingUpdateAvatar: isPending,
+    isLoadingAddLink: isPending,
+    isLoadingRemoveLink: isPending,
     name,
     links: links?.[0] || ([] as { url: string; label: string }[]),
     creatorAddress,
+    isLoadingCount,
 
     // Write operations
     donate,

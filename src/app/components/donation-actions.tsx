@@ -22,6 +22,7 @@ interface DonationActionsProps {
   message: string
   isAccepted: boolean
   isBurned: boolean
+  creatorAddress: `0x${string}`
 }
 
 export function DonationActions({
@@ -29,13 +30,19 @@ export function DonationActions({
   amount,
   message,
   isAccepted,
-  isBurned
+  isBurned,
+  creatorAddress
 }: DonationActionsProps) {
-  const { acceptDonation, burnDonation, isLoading } = useCreator()
+  const {
+    acceptDonation,
+    burnDonation,
+    isLoadingAcceptDonation,
+    isLoadingBurnDonation
+  } = useCreator()
 
   const handleAccept = async () => {
     try {
-      await acceptDonation(donationId)
+      await acceptDonation(donationId, creatorAddress)
       toast.success("Approve transaction on your wallet")
     } catch (error) {
       console.error("Failed to accept donation:", error)
@@ -45,7 +52,7 @@ export function DonationActions({
 
   const handleBurn = async () => {
     try {
-      await burnDonation(donationId)
+      await burnDonation(donationId, creatorAddress)
       toast.success("Approve transaction on your wallet")
     } catch (error) {
       console.error("Failed to burn donation:", error)
@@ -72,7 +79,7 @@ export function DonationActions({
             onClick={handleAccept}
             variant="default"
             size="sm"
-            disabled={isLoading}
+            disabled={isLoadingAcceptDonation}
           >
             Accept
           </Button>
@@ -80,7 +87,7 @@ export function DonationActions({
             onClick={handleBurn}
             variant="destructive"
             size="sm"
-            disabled={isLoading}
+            disabled={isLoadingBurnDonation}
           >
             Burn
           </Button>

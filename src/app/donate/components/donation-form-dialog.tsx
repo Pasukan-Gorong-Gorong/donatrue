@@ -1,6 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { parseEther } from "viem"
@@ -33,7 +34,8 @@ type DonationSchema = z.infer<typeof donationSchema>
 
 export function DonationFormDialog() {
   const { isConnected } = useWallet()
-  const { donate, isLoading, donateError } = useCreator()
+  const { creatorAddress } = useCreator()
+  const { donate, isLoadingDonate, isLoadingInfo, donateError } = useCreator()
 
   const form = useForm<DonationSchema>({
     resolver: zodResolver(donationSchema),
@@ -46,7 +48,7 @@ export function DonationFormDialog() {
   const onSubmit = async (values: DonationSchema) => {
     try {
       const amountInWei = parseEther(values.amount)
-      donate(values.message, amountInWei)
+      donate(values.message, amountInWei, creatorAddress!)
       form.reset()
       toast.success("Donation sent successfully!")
     } catch (error) {
@@ -107,8 +109,16 @@ export function DonationFormDialog() {
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Donating..." : "Donate"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoadingDonate || isLoadingInfo}
+          >
+            {isLoadingDonate || isLoadingInfo ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              "Donate"
+            )}
           </Button>
         </form>
       </Form>

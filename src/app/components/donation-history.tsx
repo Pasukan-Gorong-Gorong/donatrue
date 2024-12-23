@@ -2,8 +2,6 @@
 
 import { formatEther } from "viem"
 
-import { DonationActions } from "@/app/components/donation-actions"
-
 import { useDonations } from "@/lib/hooks/use-donations"
 
 interface DonationHistoryProps {
@@ -11,10 +9,7 @@ interface DonationHistoryProps {
   isOwner: boolean
 }
 
-export function DonationHistory({
-  creatorAddress,
-  isOwner
-}: DonationHistoryProps) {
+export function DonationHistory({ creatorAddress }: DonationHistoryProps) {
   const { donations, isLoading, fetchNextPage, hasNextPage } =
     useDonations(creatorAddress)
 
@@ -49,15 +44,6 @@ export function DonationHistory({
                     ).toLocaleString()}
                   </div>
                 </div>
-                {isOwner && (
-                  <DonationActions
-                    donationId={BigInt(index)}
-                    amount={donation.amount}
-                    message={donation.message}
-                    isAccepted={donation.isAccepted}
-                    isBurned={donation.isBurned}
-                  />
-                )}
               </div>
             </div>
           ))}

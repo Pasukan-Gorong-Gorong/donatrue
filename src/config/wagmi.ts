@@ -3,8 +3,28 @@
 import { env } from "@/env"
 import { getDefaultConfig } from "connectkit"
 import { del, get, set } from "idb-keyval"
+import { type Chain } from "viem"
 import { http, createConfig, createStorage } from "wagmi"
-import { sepolia } from "wagmi/chains"
+
+const bitfinity = {
+  id: 355113,
+  name: "Bitfinity",
+  nativeCurrency: {
+    name: "BFT",
+    symbol: "BFT",
+    decimals: 18
+  },
+  rpcUrls: {
+    default: { http: ["https://testnet.bitfinity.network"] },
+    public: { http: ["https://testnet.bitfinity.network"] }
+  },
+  blockExplorers: {
+    default: {
+      name: "Bitfinity Explorer",
+      url: "https://explorer.testnet.bitfinity.network/"
+    }
+  }
+} as const satisfies Chain
 
 export const config = createConfig(
   getDefaultConfig({
@@ -21,24 +41,15 @@ export const config = createConfig(
         }
       }
     }),
-    // Your dApps chains
-    chains: [sepolia],
+    chains: [bitfinity],
     transports: {
-      // RPC URL for each chain
-      [sepolia.id]: http(
-        `https://eth-sepolia.g.alchemy.com/v2/${env.NEXT_PUBLIC_ALCHEMY_ID}`
-      )
+      [bitfinity.id]: http("https://testnet.bitfinity.network")
     },
 
-    // Required API Keys
     walletConnectProjectId: env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-
-    // Required App Info
     appName: "Donatrue",
-
-    // Optional App Info
     appDescription: "Donatrue is decentralized donation system",
-    appUrl: "https://donatrue.lichtlabs.org", // your app's url
-    appIcon: "https://i.ibb.co.com/0jtM4Lj/donatrue.png" // your app's icon, no bigger than 1024x1024px (max. 1MB)
+    appUrl: "https://donatrue.lichtlabs.org",
+    appIcon: "https://i.ibb.co.com/0jtM4Lj/donatrue.png"
   })
 )

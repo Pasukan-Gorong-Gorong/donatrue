@@ -19,25 +19,38 @@ export function useCreatorProfile(creatorAddress: `0x${string}`) {
   const { data: name } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "name"
+    functionName: "name",
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   const { data: bio } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "bio"
+    functionName: "bio",
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   const { data: avatar } = useReadContract({
     address: creatorAddress,
     abi: CREATOR_CONTRACT_ABI,
-    functionName: "avatar"
+    functionName: "avatar",
+    query: {
+      refetchInterval: 1000,
+      enabled: !!creatorAddress
+    }
   })
 
   // Write operations
   const { writeContract: write, isPending } = useWriteContract()
 
   const updateBio = async (newBio: string) => {
+    if (!creatorAddress) return
     await write({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,
@@ -47,6 +60,7 @@ export function useCreatorProfile(creatorAddress: `0x${string}`) {
   }
 
   const updateAvatar = async (newAvatar: string) => {
+    if (!creatorAddress) return
     await write({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,
@@ -56,6 +70,7 @@ export function useCreatorProfile(creatorAddress: `0x${string}`) {
   }
 
   const addLink = async (url: string, label: string) => {
+    if (!creatorAddress) return
     await write({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,
@@ -65,6 +80,7 @@ export function useCreatorProfile(creatorAddress: `0x${string}`) {
   }
 
   const removeLink = async (index: number) => {
+    if (!creatorAddress) return
     await write({
       address: creatorAddress,
       abi: CREATOR_CONTRACT_ABI,

@@ -41,6 +41,7 @@ export default function Donate() {
     if (!isConnected) {
       return
     }
+    console.log("@creator", creator)
     setSelectedCreator(creator)
     setModalOpen(true)
   }
@@ -57,6 +58,8 @@ export default function Donate() {
       </div>
     )
   }
+
+  console.log("@allCreators", allCreators)
 
   return (
     <main>

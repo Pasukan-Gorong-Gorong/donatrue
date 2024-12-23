@@ -55,7 +55,8 @@ export function ConfirmDonationModal({
   creator,
   onClose
 }: ConfirmDonationModalProps) {
-  const { donate, isLoading, donateError } = useCreator()
+  console.log("@creator:confirm-donation.tsx:58", creator)
+  const { donate, isLoadingDonate, donateError } = useCreator()
 
   const form = useForm<DonationSchema>({
     resolver: zodResolver(donationSchema),
@@ -68,7 +69,7 @@ export function ConfirmDonationModal({
   const onSubmit = async (values: DonationSchema) => {
     try {
       const amountInWei = parseEther(values.amount)
-      donate(values.message, amountInWei)
+      donate(values.message, amountInWei, creator.address)
       form.reset()
       toast.success("Approve your transaction in your wallet")
       onClose()
@@ -130,8 +131,8 @@ export function ConfirmDonationModal({
               <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Donating..." : "Donate"}
+              <Button type="submit" disabled={isLoadingDonate}>
+                {isLoadingDonate ? "Donating..." : "Donate"}
               </Button>
             </div>
           </form>
